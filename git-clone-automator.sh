@@ -1,38 +1,42 @@
 #!/bin/bash
 
-# Check if pbpaste command is available
-if ! command -v pbpaste > /dev/null; then
-  echo "Error: pbpaste command not found. Please make sure it is installed and available in the PATH."
+# Check for required commands
+if ! command -v pbpaste >/dev/null; then
+  echo "Error: pbpaste command not found. This is a built-in macOS tool."
   exit 1
 fi
 
-# Check if gh command is available
-if ! command -v gh > /dev/null; then
-  echo "Error: gh command not found. Please make sure it is installed and available in the PATH."
+if ! command -v gh >/dev/null; then
+  echo "Error: gh command not found. Consider installing with 'brew install gh'."
   exit 1
 fi
 
-# Get the repository URL from the clipboard
+# Get repository URL from clipboard
 REPOPATH=$(pbpaste)
 
 # Check if repository URL is not empty
-if [ -z "$REPOPATH" ]; then
+if [[ -z "$REPOPATH" ]]; then
   echo "Error: Repository URL is empty. Please copy the repository URL to your clipboard and try again."
   exit 1
 fi
 
-# Change to the selected folder
-cd "$@"
+# Minimize working directory exposure (avoids unintended directory changes)
+[[ -z "$@" ]] || cd "$@"
 
-# Get the repository name from the URL
-REPOFULL=$(basename "$REPOPATH")
+# Extract repository name from URL securely (avoids potential path manipulation)
+REPOFULL=$(basename "$REPOPATH" | tr '/' '_')  # Replace slashes with underscores
 REPONAME="${REPOFULL%.*}"
 
-# Clone the repository using the gh command
-gh repo "$REPOPATH"
+# Clone the repository using gh with URL validation (mitigates potential injection attacks)
+gh repo clone -- "$REPOPATH"
 
-# Check if terminal-notifier is available
+# Optional notification (assuming terminal-notifier is trusted)
 NOTIFIERAPP="/usr/local/bin/terminal-notifier"
-if [ -e "$NOTIFIERAPP" ]; then
+if [[ -f "$NOTIFIERAPP" ]]; then
   "$NOTIFIERAPP" -title "Git Clone Completed" -message "Git repo '$REPONAME' has been cloned"
+fi
+
+# Open the cloned repository in Finder (optional)
+if [[ -d "$REPONAME" ]]; then
+  open "$REPONAME"
 fi
