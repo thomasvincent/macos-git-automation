@@ -107,12 +107,50 @@ install_test_suite() {
 	if [ ! -d $WP_TESTS_DIR ]; then
 		# set up testing suite
 		mkdir -p $WP_TESTS_DIR
-		svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/includes/ $WP_TESTS_DIR/includes
-		svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ $WP_TESTS_DIR/data
+		
+		# Check if svn is installed
+		if command -v svn >/dev/null 2>&1; then
+			# Use svn if available
+			svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/includes/ $WP_TESTS_DIR/includes
+			svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ $WP_TESTS_DIR/data
+		else
+			# Use curl or wget as fallback
+			mkdir -p $WP_TESTS_DIR/includes $WP_TESTS_DIR/data
+			
+			# Download includes files
+			echo "svn not found, using direct download instead"
+			
+			# Create a temporary directory for the zip file
+			local TEMP_DIR=$(mktemp -d)
+			local ZIP_FILE="$TEMP_DIR/wordpress-tests.zip"
+			
+			# Download the WordPress tests as a zip file
+			download "https://github.com/WordPress/wordpress-develop/archive/${WP_TESTS_TAG#tags/}.zip" "$ZIP_FILE"
+			
+			# Extract the zip file
+			unzip -q "$ZIP_FILE" -d "$TEMP_DIR"
+			
+			# Find the extracted directory
+			local EXTRACT_DIR=$(find "$TEMP_DIR" -type d -name "wordpress-develop-*" | head -n 1)
+			
+			# Copy the test files
+			if [ -d "$EXTRACT_DIR/tests/phpunit/includes" ]; then
+				cp -r "$EXTRACT_DIR/tests/phpunit/includes/"* "$WP_TESTS_DIR/includes/"
+				cp -r "$EXTRACT_DIR/tests/phpunit/data/"* "$WP_TESTS_DIR/data/" 2>/dev/null || true
+			fi
+			
+			# Clean up
+			rm -rf "$TEMP_DIR"
+		fi
 	fi
 
 	if [ ! -f wp-tests-config.php ]; then
-		download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
+		if command -v svn >/dev/null 2>&1; then
+			download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
+		else
+			# Use GitHub as fallback
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/${WP_TESTS_TAG#tags/}/wp-tests-config-sample.php" "$WP_TESTS_DIR"/wp-tests-config.php
+		fi
 		# remove all forward slashes in the end
 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
 		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
