@@ -18,60 +18,68 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ main ]
   schedule:
-    - cron: '0 0 * * 0'  # Run every Sunday at midnight
+    # Run analysis weekly every Sunday at midnight UTC
+    - cron: '0 0 * * 0'
 
 permissions:
+  # Required for uploading CodeQL results
   security-events: write
-  actions: read
+  # Required for checking out code
   contents: read
+  # Optional: Read permissions for actions metadata (often useful, minimal risk)
+  actions: read
 
 jobs:
   analyze:
-    name: Analyze
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+    name: Analyze (${{ matrix.language }})
+    # Runner size impacts performance of analysis. Consider larger runners for large repositories.
+    # Available options are 'ubuntu-latest', 'windows-latest', 'macos-latest'
+    # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
+    runs-on: ubuntu-latest # Using 'ubuntu-latest' is generally recommended
+    timeout-minutes: 60    # Timeout to prevent excessively long runs
 
     strategy:
-      fail-fast: false
+      fail-fast: false # Ensure all language analyses run even if one fails
       matrix:
+        # Define the languages to analyze. Add languages as needed.
         language: [ 'javascript' ]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
-        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
-        # Note: PHP is not directly supported by CodeQL, we'll use a separate workflow for PHP analysis
+        # CodeQL supports: [ 'c-cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby', 'swift' ]
+        # Note: 'c-cpp' is used for C and C++ analysis.
+        # Swift analysis is beta as of early 2025.
 
     steps:
     - name: Checkout repository
+      # Uses the latest major version of the checkout action (v4 as of early 2025)
       uses: actions/checkout@v4
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
+      # Uses the latest major version of the CodeQL init action (v3 as of early 2025)
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
-        
-        # Details on CodeQL's query packs
+        # Specify the query suites to run. 'security-extended' covers more CVEs and security weaknesses.
+        # 'security-and-quality' includes security queries plus maintainability and reliability queries.
+        # Available suites include: 'security-extended', 'security-and-quality'
+        # Default is 'security-extended' if not specified.
         queries: security-extended,security-and-quality
+        # Example: To use custom queries, uncomment the following lines:
+        # config-file: ./.github/codeql/codeql-config.yml
+        # queries: +security-and-quality, +path/to/custom/queries
+        # The '+' prefix adds specified queries to those defined in the config file or default suites.
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
-
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-
-    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-    #    and modify them (or add more) to build your code if your project
-    #    uses a compiled language
-
-    #- run: |
-    #   make bootstrap
-    #   make release
+    # Auto-build is not needed for interpreted languages like JavaScript/TypeScript, Python, Ruby.
+    # If you were analyzing a compiled language (C/C++, C#, Go, Java, Swift) and the default
+    # Autobuild step failed, you would insert your custom build steps here.
+    # Example for a JS/TS project requiring a build step (e.g., `npm run build`):
+    # - name: Build JavaScript/TypeScript project (if needed)
+    #   run: |
+    #     npm install
+    #     npm run build # Replace with your actual build command if CodeQL needs to observe it
 
     - name: Perform CodeQL Analysis
+      # Uses the latest major version of the CodeQL analyze action (v3 as of early 2025)
       uses: github/codeql-action/analyze@v3
       with:
+        # Optional: Define a category for the results to make filtering easier in GitHub Security tab
         category: "/language:${{matrix.language}}"
