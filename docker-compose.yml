@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  wordpress-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/var/www/html
+      - ./logs:/var/www/html/logs
+      - ./test-results:/var/www/html/test-results
+    environment:
+      - WP_VERSION=latest
+    depends_on:
+      - mysql
+    command: bash -c "mkdir -p logs test-results && composer test > logs/composer-test.log 2>&1 && npm test > logs/npm-test.log 2>&1"
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress_test
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

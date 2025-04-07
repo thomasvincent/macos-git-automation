@@ -1,0 +1,44 @@
+name: Containerized CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  containerized-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        wp-version: [latest, '6.4', '6.3', '6.2']
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build and run tests
+      run: |
+        # Make entrypoint script executable
+        chmod +x docker-entrypoint.sh
+        
+        # Build and run the tests with Docker Compose
+        docker-compose build
+        WP_VERSION=${{ matrix.wp-version }} docker-compose up --abort-on-container-exit
+      env:
+        WP_VERSION: ${{ matrix.wp-version }}
+
+    - name: Upload test logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-logs-wp-${{ matrix.wp-version }}
+        path: |
+          ./logs
+          ./test-results

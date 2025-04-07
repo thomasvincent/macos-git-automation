@@ -1,0 +1,39 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Node.js
+node_modules
+npm-debug.log
+
+# Composer
+vendor
+composer.phar
+
+# Build artifacts
+build
+dist
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs
+logs
+*.log
+
+# Test results
+test-results
+
+# Temporary files
+tmp
+.tmp
+.DS_Store
+
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
