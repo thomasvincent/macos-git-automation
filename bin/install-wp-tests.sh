@@ -133,6 +133,10 @@ install_test_suite() {
 			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file"
 		done
 		
+		# PHPUnit compatibility files
+		mkdir -p "$WP_TESTS_DIR/includes/phpunit6"
+		download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit6/compat.php" "$WP_TESTS_DIR/includes/phpunit6/compat.php"
+
 		# Class files
 		for file in class-basic-object.php class-wp-rest-server.php class-wp-fake-request.php class-wp-test-stream.php class-wp-test-rest-controller.php class-wp-test-spy-rest-server.php; do
 			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file"
