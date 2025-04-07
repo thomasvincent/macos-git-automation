@@ -10,8 +10,8 @@
  * @license GPL-2.0+ https://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-// Mock the google-calendar-widget module
-jest.mock('../assets/js/google-calendar-widget', () => ({
+// Create a mock module for google-calendar-widget
+const googleCalendarWidget = {
   processFinalFeed: jest.fn(),
   getStartTime: jest.fn(),
   getEndTime: jest.fn(),
@@ -19,35 +19,16 @@ jest.mock('../assets/js/google-calendar-widget', () => ({
   buildDate: jest.fn(),
   buildLocation: jest.fn(),
   createClickHandler: jest.fn(),
-  loadCalendar: jest.fn().mockImplementation(() => Promise.resolve())
-}), { virtual: true });
+  loadCalendar: jest.fn().mockResolvedValue()
+};
 
-// Import the mocked module
-const googleCalendarWidget = require('../assets/js/google-calendar-widget');
+// Mock the module
+jest.mock('../assets/js/google-calendar-widget', () => googleCalendarWidget, { virtual: true });
 
 describe('Google Calendar Widget Performance', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();
-    
-    // Set up document.getElementById mock
-    document.getElementById.mockReturnValue({
-      childNodes: [],
-      appendChild: jest.fn(),
-      removeChild: jest.fn()
-    });
-    
-    // Set up document.createElement mock
-    document.createElement.mockReturnValue({
-      className: '',
-      textContent: '',
-      innerHTML: '',
-      appendChild: jest.fn(),
-      setAttribute: jest.fn()
-    });
-    
-    // Mock window.performance.now
-    window.performance.now.mockReturnValueOnce(0).mockReturnValueOnce(500);
   });
   
   describe('Event Processing Performance', () => {
@@ -102,9 +83,9 @@ describe('Google Calendar Widget Performance', () => {
   });
   
   describe('Batch Request Performance', () => {
-    test('should handle multiple calendars efficiently', () => {
+    test('should handle multiple calendars efficiently', async () => {
       // Mock the gapi.client.load function to return a resolved promise
-      gapi.client.load.mockReturnValueOnce(Promise.resolve());
+      gapi.client.load.mockResolvedValueOnce();
       
       // Mock the gapi.client.newBatch function to return a batch object
       const mockBatch = {
@@ -151,17 +132,17 @@ describe('Google Calendar Widget Performance', () => {
       }
       
       // Call the loadCalendar function with multiple calendars
-      return googleCalendarWidget.loadCalendar(
+      await googleCalendarWidget.loadCalendar(
         'API_KEY',
         'title-id',
         'output-id',
         10,
         false,
         calendarIds.join(',')
-      ).then(() => {
-        // Verify that the loadCalendar function was called
-        expect(googleCalendarWidget.loadCalendar).toHaveBeenCalled();
-      });
+      );
+      
+      // Verify that the loadCalendar function was called
+      expect(googleCalendarWidget.loadCalendar).toHaveBeenCalled();
     });
   });
   

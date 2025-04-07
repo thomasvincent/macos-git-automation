@@ -22,18 +22,36 @@ global.window = {
   }
 };
 
-// Mock the global document object
+// Mock the global document object with proper Jest mock functions
 global.document = {
-  getElementById: jest.fn(),
-  createElement: jest.fn()
+  getElementById: jest.fn(() => ({
+    childNodes: [],
+    appendChild: jest.fn(),
+    removeChild: jest.fn()
+  })),
+  createElement: jest.fn(() => ({
+    className: '',
+    textContent: '',
+    innerHTML: '',
+    appendChild: jest.fn(),
+    setAttribute: jest.fn()
+  }))
 };
 
-// Mock the global gapi object
+// Mock the global gapi object with proper Jest mock functions
 global.gapi = {
   client: {
     setApiKey: jest.fn(),
-    load: jest.fn(),
-    newBatch: jest.fn(),
+    load: jest.fn(() => Promise.resolve()),
+    newBatch: jest.fn(() => ({
+      add: jest.fn(),
+      then: jest.fn(callback => {
+        callback({
+          result: {}
+        });
+        return { catch: jest.fn() };
+      })
+    })),
     calendar: {
       events: {
         list: jest.fn()
@@ -51,6 +69,9 @@ beforeEach(() => {
     time: jest.fn(),
     timeEnd: jest.fn()
   };
+  
+  // Reset all mocks before each test
+  jest.clearAllMocks();
 });
 
 afterEach(() => {
@@ -65,3 +86,21 @@ const mockDir = path.join(__dirname, 'mocks');
 if (!fs.existsSync(mockDir)) {
   fs.mkdirSync(mockDir);
 }
+
+// Mock the process.memoryUsage function for memory tests
+process.memoryUsage = jest.fn(() => ({
+  rss: 1024 * 1024 * 10,
+  heapTotal: 1024 * 1024 * 5,
+  heapUsed: 1024 * 1024 * 3,
+  external: 1024 * 1024 * 1
+}));
+
+// Set up a mock Date object
+global.Date = class extends Date {
+  constructor(...args) {
+    if (args.length === 0) {
+      return new Date(2025, 3, 15, 10, 0, 0);
+    }
+    return new Date(...args);
+  }
+};
