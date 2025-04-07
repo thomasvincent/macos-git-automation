@@ -7,12 +7,12 @@
 
 // Mock the global document object
 global.document = {
-    getElementById: jest.fn(() => ({
+    getElementById: jest.fn().mockImplementation(() => ({
         childNodes: [],
         removeChild: jest.fn(),
         appendChild: jest.fn()
     })),
-    createElement: jest.fn(() => ({
+    createElement: jest.fn().mockImplementation(() => ({
         className: '',
         appendChild: jest.fn(),
         textContent: '',

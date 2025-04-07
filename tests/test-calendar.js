@@ -10,22 +10,22 @@ describe('Google Calendar Widget', () => {
         // Reset mocks before each test
         jest.clearAllMocks();
         
-        // Reset the document mock
-        document.getElementById.mockReturnValue({
+        // Reset the document mock - use a different approach that doesn't rely on mockReturnValue
+        document.getElementById = jest.fn().mockImplementation(() => ({
             childNodes: [],
             removeChild: jest.fn(),
             appendChild: jest.fn()
-        });
+        }));
         
         // Reset the createElement mock
-        document.createElement.mockReturnValue({
+        document.createElement = jest.fn().mockImplementation(() => ({
             className: '',
             appendChild: jest.fn(),
             textContent: '',
             innerHTML: '',
             setAttribute: jest.fn(),
             href: ''
-        });
+        }));
     });
     
     test('google_calendar_widget object exists', () => {
