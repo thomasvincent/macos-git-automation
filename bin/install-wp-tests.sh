@@ -129,7 +129,7 @@ install_test_suite() {
 		echo "Downloading WordPress test files from GitHub..."
 		
 		# Core test files
-		for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php mock-mailer.php install.php; do
+		for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php mock-mailer.php install.php unregister-blocks-hooks.php; do
 			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file"
 		done
 		
