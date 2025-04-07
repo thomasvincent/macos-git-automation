@@ -1,0 +1,76 @@
+name: Feature Request
+description: Suggest an idea for this project
+title: "[Feature Request]: "
+labels: ["enhancement", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature!
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm you've completed the following steps before submitting your feature request.
+      options:
+        - label: I have searched for similar feature requests in both open and closed issues
+          required: true
+        - label: I have read the documentation to confirm this feature doesn't already exist
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: I'm always frustrated when [...]
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see implemented
+      placeholder: I would like to see [...]
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: I've also thought about [...]
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples about the feature request here
+    validations:
+      required: false
+  - type: dropdown
+    id: importance
+    attributes:
+      label: Importance
+      description: How important is this feature to you?
+      options:
+        - Nice to have
+        - Important
+        - Critical
+    validations:
+      required: true
+  - type: dropdown
+    id: wordpress_version
+    attributes:
+      label: WordPress Version
+      description: What version of WordPress are you using?
+      options:
+        - 6.4.x
+        - 6.3.x
+        - 6.2.x
+        - 6.1.x
+        - 6.0.x
+        - 5.9.x or older
+    validations:
+      required: true

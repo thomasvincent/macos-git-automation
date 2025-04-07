@@ -1,0 +1,113 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm you've completed the following steps before submitting your bug report.
+      options:
+        - label: I have searched for similar issues in both open and closed tickets
+          required: true
+        - label: I have tested with all other plugins deactivated
+          required: true
+        - label: I have verified the issue persists with a default WordPress theme
+          required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: When I try to...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem
+    validations:
+      required: false
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: Browser
+      description: What browsers are you seeing the problem on?
+      multiple: true
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Microsoft Edge
+        - Opera
+        - Other
+    validations:
+      required: false
+  - type: dropdown
+    id: wordpress_version
+    attributes:
+      label: WordPress Version
+      description: What version of WordPress are you using?
+      options:
+        - 6.4.x
+        - 6.3.x
+        - 6.2.x
+        - 6.1.x
+        - 6.0.x
+        - 5.9.x or older
+    validations:
+      required: true
+  - type: dropdown
+    id: php_version
+    attributes:
+      label: PHP Version
+      description: What version of PHP are you using?
+      options:
+        - 8.2.x
+        - 8.1.x
+        - 8.0.x
+        - 7.4.x
+        - 7.3.x or older
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+    validations:
+      required: false
