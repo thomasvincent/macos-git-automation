@@ -79,3 +79,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed various minor bugs
+
+[2.1.0]: https://github.com/kazokuda/google-calendar-widget/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/kazokuda/google-calendar-widget/compare/v1.4.5...v2.0.0
+[1.4.5]: https://github.com/kazokuda/google-calendar-widget/compare/v1.4.3...v1.4.5
+[1.4.3]: https://github.com/kazokuda/google-calendar-widget/compare/v1.3.2...v1.4.3
+[1.3.2]: https://github.com/kazokuda/google-calendar-widget/compare/v1.2.0...v1.3.2
+[1.2.0]: https://github.com/kazokuda/google-calendar-widget/releases/tag/v1.2.0
