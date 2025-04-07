@@ -48,6 +48,11 @@ ehthumbs.db
 Thumbs.db
 
 # IDE files
+.vscode/
+.idea/
+.trunk/
+
+# IDE files
 .idea/
 .vscode/
 *.sublime-project
