@@ -106,7 +106,7 @@ install_test_suite() {
 	if [ ! -d $WP_TESTS_DIR ]; then
 		# set up testing suite
 		mkdir -p $WP_TESTS_DIR
-		
+
 		# Determine WordPress version for URL construction
 		local WP_VERSION_PATH
 		if [[ $WP_TESTS_TAG == trunk ]]; then
@@ -119,42 +119,50 @@ install_test_suite() {
 			echo "Unknown WordPress test tag: $WP_TESTS_TAG"
 			exit 1
 		fi
-		
+
 		# Create necessary directories
 		mkdir -p "$WP_TESTS_DIR/includes"
 		mkdir -p "$WP_TESTS_DIR/data/plugins"
 		mkdir -p "$WP_TESTS_DIR/data/themes/default"
-		
+
 		# Download essential include files
 		echo "Downloading WordPress test files from GitHub..."
-		
-		# Core test files
-		for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php mock-mailer.php install.php unregister-blocks-hooks.php; do
-			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file"
+
+		# Core test files - include all possible files to avoid missing any
+		for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php mock-mailer.php install.php unregister-blocks-hooks.php abstract-testcase.php phpunit-adapter-testcase.php; do
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file" || echo "Warning: Could not download $file"
 		done
-		
+
 		# PHPUnit compatibility files
 		mkdir -p "$WP_TESTS_DIR/includes/phpunit6"
-		download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit6/compat.php" "$WP_TESTS_DIR/includes/phpunit6/compat.php"
-		download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit-adapter-testcase.php" "$WP_TESTS_DIR/includes/phpunit-adapter-testcase.php"
+		mkdir -p "$WP_TESTS_DIR/includes/phpunit7"
+
+		# Download all PHPUnit compatibility files
+		for file in compat.php; do
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit6/$file" "$WP_TESTS_DIR/includes/phpunit6/$file" || echo "Warning: Could not download phpunit6/$file"
+		done
+
+		for file in compat.php; do
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit7/$file" "$WP_TESTS_DIR/includes/phpunit7/$file" || echo "Warning: Could not download phpunit7/$file"
+		done
 
 		# Class files
 		for file in class-basic-object.php class-wp-rest-server.php class-wp-fake-request.php class-wp-test-stream.php class-wp-test-rest-controller.php class-wp-test-spy-rest-server.php; do
-			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file"
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file" || echo "Warning: Could not download $file"
 		done
-		
+
 		# Factory classes
 		mkdir -p "$WP_TESTS_DIR/includes/factory"
 		for file in class-wp-unittest-factory.php class-wp-unittest-factory-for-attachment.php class-wp-unittest-factory-for-blog.php class-wp-unittest-factory-for-bookmark.php class-wp-unittest-factory-for-comment.php class-wp-unittest-factory-for-network.php class-wp-unittest-factory-for-post.php class-wp-unittest-factory-for-term.php class-wp-unittest-factory-for-thing.php class-wp-unittest-factory-for-user.php class-wp-unittest-factory-callback-after-create.php class-wp-unittest-generator.php; do
-			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/factory/$file" "$WP_TESTS_DIR/includes/factory/$file"
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/factory/$file" "$WP_TESTS_DIR/includes/factory/$file" || echo "Warning: Could not download factory/$file"
 		done
-		
+
 		# REST API test files
 		mkdir -p "$WP_TESTS_DIR/includes/rest-api"
 		for file in class-wp-rest-test-search-handler.php class-wp-test-rest-controller-testcase.php class-wp-test-rest-post-type-controller-testcase.php class-wp-test-rest-testcase.php; do
-			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/rest-api/$file" "$WP_TESTS_DIR/includes/rest-api/$file"
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/rest-api/$file" "$WP_TESTS_DIR/includes/rest-api/$file" || echo "Warning: Could not download rest-api/$file"
 		done
-		
+
 		# Create a minimal hello.php plugin
 		echo "<?php
 /**
@@ -166,12 +174,12 @@ install_test_suite() {
  * Author URI: http://ma.tt/
  */
 " > "$WP_TESTS_DIR/data/plugins/hello.php"
-		
+
 		# Create minimal theme files
 		echo "/*
 Theme Name: Default
 */" > "$WP_TESTS_DIR/data/themes/default/style.css"
-		
+
 		echo "<?php
 // Silence is golden.
 " > "$WP_TESTS_DIR/data/themes/default/index.php"
@@ -180,7 +188,7 @@ Theme Name: Default
 	if [ ! -f "$WP_TESTS_DIR/wp-tests-config.php" ]; then
 		# Download config file
 		download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/wp-tests-config-sample.php" "$WP_TESTS_DIR/wp-tests-config.php"
-		
+
 		# Edit the config file
 		# remove all forward slashes in the end
 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
