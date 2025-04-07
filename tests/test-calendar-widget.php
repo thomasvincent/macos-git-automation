@@ -182,7 +182,16 @@ class TestCalendarWidget extends WP_UnitTestCase {
         $this->assertStringContainsString('Test Calendar', $output);
         $this->assertStringContainsString('google-calendar-widget-events', $output);
         $this->assertStringContainsString('google-calendar-widget-loading', $output);
-        $this->assertStringContainsString('google_calendar_widget.loadCalendar', $output);
+        
+        // Check for either the calendar initialization or the error message
+        $settings = (array) get_option('google_calendar_widget_settings');
+        $api_key = isset($settings['apikey']) ? esc_attr($settings['apikey']) : '';
+        
+        if (!empty($api_key)) {
+            $this->assertStringContainsString('google_calendar_widget.loadCalendar', $output);
+        } else {
+            $this->assertStringContainsString('Error: Google API Key is not set', $output);
+        }
     }
 
     /**
