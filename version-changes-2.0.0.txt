@@ -1,0 +1,9 @@
+- Refactored plugin to use modern PHP OOP practices
+- Updated to use the latest WordPress Widget API
+- Modernized JavaScript using ES6+ syntax
+- Improved module pattern to avoid global namespace pollution
+- Enhanced calendar event processing and display
+- Better support for multiple calendars
+- Improved CSS with flexbox and better visual hierarchy
+- Updated standalone example to use the latest Google Calendar API
+- Added comprehensive documentation and tests
