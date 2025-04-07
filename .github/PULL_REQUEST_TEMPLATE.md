@@ -1,30 +1,29 @@
 ## Description
-<!-- Please provide a brief description of the changes in this PR -->
 
-## Related Issue
-<!-- Please link to the issue here if applicable. Use format: Fixes #123 -->
+<!-- Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change. -->
 
-## Type of Change
-<!-- Please check the relevant options -->
-- [ ] Bug fix (non-breaking change that fixes an issue)
-- [ ] New feature (non-breaking change that adds functionality)
+Fixes # (issue)
+
+## Type of change
+
+<!-- Please delete options that are not relevant. -->
+
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Code refactoring
-- [ ] Performance improvement
-- [ ] Tests
+- [ ] This change requires a documentation update
 
-## Testing Instructions
-<!-- Please describe the tests that you ran to verify your changes -->
-1. 
-2. 
-3. 
+## How Has This Been Tested?
 
-## Screenshots (if applicable)
-<!-- Please add screenshots if the change affects the UI -->
+<!-- Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration. -->
 
-## Checklist
-<!-- Please check all that apply -->
+- [ ] Test A
+- [ ] Test B
+
+## Checklist:
+
+<!-- Please delete options that are not relevant. -->
+
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
@@ -33,3 +32,15 @@
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] Any dependent changes have been merged and published in downstream modules
+- [ ] I have checked my code and corrected any misspellings
+- [ ] I have updated the version number in relevant files
+- [ ] I have tested with WordPress coding standards
+
+## WordPress Specific Checks:
+
+- [ ] I have properly sanitized and validated all user inputs
+- [ ] I have properly escaped all outputs
+- [ ] I have used WordPress core functions where appropriate
+- [ ] I have followed WordPress naming conventions
+- [ ] I have tested with WordPress debug mode enabled
+- [ ] I have tested with different user roles and permissions
