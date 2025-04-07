@@ -19,12 +19,16 @@
         "wp-coding-standards/wpcs": "^2.3",
         "phpunit/phpunit": "^7.5 || ^8.5",
         "yoast/phpunit-polyfills": "^4.0",
-        "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0"
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpcsstandards/phpcsutils": "^1.0",
+        "phpcsstandards/phpcsextra": "^1.1"
     },
     "scripts": {
-        "phpcs": "phpcs --standard=WordPress",
-        "phpcbf": "phpcbf --standard=WordPress",
-        "test": "phpunit"
+        "phpcs": "phpcs --standard=WordPress --extensions=php",
+        "phpcbf": "phpcbf --standard=WordPress --extensions=php",
+        "test": "phpunit",
+        "config-phpcs": "phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcompatibility/php-compatibility,vendor/phpcompatibility/phpcompatibility-paragonie,vendor/phpcompatibility/phpcompatibility-wp,vendor/phpcsstandards/phpcsutils,vendor/phpcsstandards/phpcsextra"
     },
     "config": {
         "allow-plugins": {

@@ -1,14 +1,15 @@
 #!/bin/bash
 
-set -e  # Exit immediately if a command exits with a non-zero status
+# Exit immediately if a command exits with a non-zero status
+set -e
 
 echo "Running JavaScript tests..."
-npm test
+npm test || { echo "JavaScript tests failed"; exit 1; }
 
 echo "Running PHP CodeSniffer..."
-composer phpcs
+composer phpcs || { echo "PHP CodeSniffer failed"; exit 1; }
 
 echo "Running PHP tests..."
-composer test
+composer test || { echo "PHP tests failed"; exit 1; }
 
-echo "Tests completed."
+echo "Tests completed successfully."

@@ -44,7 +44,7 @@ module.exports = {
   coverageReporters: ['text', 'lcov'],
   
   // The paths to modules that run some code to configure or set up the testing framework before each test
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js', '<rootDir>/tests/setup-jest.js'],
   
   // A map from regular expressions to module names that allow to stub out resources with a single module
   moduleNameMapper: {
