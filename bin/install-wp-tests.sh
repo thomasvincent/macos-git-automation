@@ -140,6 +140,7 @@ install_test_suite() {
 			done
 			
 			# Create minimal data structure
+			mkdir -p "$WP_TESTS_DIR/includes/factory"
 			echo "<?php
 class WP_UnitTest_Factory_For_Thing {
 	function create() { return 1; }
