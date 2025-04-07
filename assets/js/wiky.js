@@ -16,12 +16,12 @@ var Wiky = {
        "Wiky.rules.post",
      ],
      pre: [
-       { rex:/(\r?\n)/g, tmplt:"\xB6" },  // replace line breaks with '¶' ..
+       { rex:/(\r?\n)/g, tmplt:"\xB6" },  // replace line breaks with '' ..
      ],
      post: [
        { rex:/(^\xB6)|(\xB6$)/g, tmplt:"" },  // .. remove linebreaks at BOS and EOS ..
        { rex:/@([0-9]+)@/g, tmplt:function($0,$1){return Wiky.restore($1);} }, // resolve blocks ..
-       { rex:/\xB6/g, tmplt:"\n" } // replace '¶' with line breaks ..
+       { rex:/\xB6/g, tmplt:"\n" } // replace '' with line breaks ..
      ],
      nonwikiblocks: [
        { rex:/\\([%])/g, tmplt:function($0,$1){return Wiky.store($1);} },
@@ -52,7 +52,7 @@ var Wiky = {
      ],
      nonwikiinlines: [
        { rex:/%(?:\{([^}]*)\})?(?:\(([^)]*)\))?(.*?)%/g, tmplt:function($0,$1,$2,$3){return Wiky.store("<code"+($2?(" lang=\"x-"+Wiky.attr($2)+"\""):"")+Wiky.style($1)+">" + Wiky.apply($3, $2?Wiky.rules.lang[Wiky.attr($2)]:Wiky.rules.code) + "</code>");} }, // inline code
-       { rex:/%(.*?)%/g, tmplt:function($0,$1){return Wiky.store("<code>" + Wiky.apply($2, Wiky.rules.code) + "</code>");} }
+       { rex:/%(.*?)%/g, tmplt:function($0,$1){return Wiky.store("<code>" + Wiky.apply($1, Wiky.rules.code) + "</code>");} }
      ],
      wikiinlines: [
        { rex:/\*([^*]+)\*/g, tmplt:"<strong>$1</strong>" },  // .. strong ..
@@ -96,11 +96,11 @@ var Wiky = {
        "Wiky.inverse.post"
      ],
      pre: [
-       { rex:/(\r?\n)/g, tmplt:"\xB6" }  // replace line breaks with '¶' ..
+       { rex:/(\r?\n)/g, tmplt:"\xB6" }  // replace line breaks with '' ..
      ],
      post: [
        { rex:/@([0-9]+)@/g, tmplt:function($0,$1){return Wiky.restore($1);} },  // resolve blocks ..
-       { rex:/\xB6/g, tmplt:"\n" }  // replace '¶' with line breaks ..
+       { rex:/\xB6/g, tmplt:"\n" }  // replace '' with line breaks ..
      ],
      nonwikiblocks: [
        { rex:/<pre([^>]*)>(.*?)<\/pre>/mgi, tmplt:function($0,$1,$2){return Wiky.store("["+Wiky.invStyle($1)+Wiky.invAttr($1,["lang"]).replace(/x\-/,"")+"%"+Wiky.apply($2, Wiky.hasAttr($1,"lang")?Wiky.inverse.lang[Wiky.attrVal($1,"lang").substr(2)]:Wiky.inverse.code)+"%]");} } //code block
@@ -210,7 +210,7 @@ var Wiky = {
       return str.replace(new RegExp("^.*?"+name+"=\"(.*?)\".*?$"), "$1");
    },
    invAttr: function(str, names) {
-      var a=[], x;
+      var a=[];
       for (var i in names)
          if (str.indexOf(names[i]+"=")>=0) 
             a.push(str.replace(new RegExp("^.*?"+names[i]+"=\"(.*?)\".*?$"), "$1"));
@@ -219,6 +219,7 @@ var Wiky = {
    style: function(str) {
       var s = str && str.split(/,|;/), p, style = "";
       for (var i in s) {
+         if (!s[i]) continue;
          p = s[i].split(":");
          if (p[0] == ">")       style += "margin-left:4em;";
          else if (p[0] == "<")  style += "margin-right:4em;";
@@ -238,6 +239,7 @@ var Wiky = {
       var s = /style=/.test(str) ? str.replace(/^.*?style=\"(.*?)\".*?$/, "$1") : "",
           p = s && s.split(";"), pi, prop = [];
       for (var i in p) {
+         if (!p[i]) continue;
          pi = p[i].split(":");
          if (pi[0] == "margin-left" && pi[1]=="4em") prop.push(">");
          else if (pi[0] == "margin-right" && pi[1]=="4em") prop.push("<");
@@ -338,7 +340,6 @@ var Wiky = {
                   c_p: "<td><p>$1</p>",
                   c_r: "<td>$1</td></tr>",
                   c_c: "<td>$1</td>",
-//                  c_u: "<td>$1<ul>",
                   u_t: "<li$2>$1</li></ul><table>",
                   o_t: "<li$2>$1</li></ol><table>",
                   d_t: "<dd>$1</dd></dl><table>",
@@ -352,22 +353,4 @@ var Wiky = {
                    "A": "upper-alpha",
                    "i": "lower-roman",
                    "I": "upper-roman",
-                   "g": "lower-greek" };
-
-      var from = "", to = "", maxlen = Math.max(fromLevel.length, toLevel.length), sync = true, sectiontype = type[toLevel.charAt(toLevel.length-1)], transition;
-
-      for (var i=0; i<maxlen; i++)
-         if (fromLevel.charAt(i+1) != toLevel.charAt(i+1) || !sync || i == maxlen-1)
-         {
-            from += fromLevel.charAt(i) == undefined ? " " : fromLevel.charAt(i);
-            to += toLevel.charAt(i) == undefined ? " " : toLevel.charAt(i);
-            sync = false;
-         }
-      transition = (from + "_" + to).replace(/([01AIagi])/g, "o");
-      return !trf[transition] ? ("?(" +  transition + ")")  // error string !
-                              : trf[transition].replace(/\$2/, " class=\"" + fromLevel + "\"")
-                                               .replace(/\$3/, !sectiontype ? "" : (" style=\"list-style-type:" + sectiontype + ";\""))
-                                               .replace(/\$1/, content)
-                                               .replace(/<p><\/p>/, "");
-   }
-}
+                   "g": "
