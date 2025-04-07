@@ -54,57 +54,16 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Check if release exists
-        id: check_release
-        run: |
-          RELEASE_EXISTS=$(curl -s -o /dev/null -w "%{http_code}" https://api.github.com/repos/${{ github.repository }}/releases/tags/${GITHUB_REF#refs/tags/})
-          if [ "$RELEASE_EXISTS" == "200" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create Release
-        id: create_release
-        if: steps.check_release.outputs.exists == 'false'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release and Upload Asset
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ steps.get_version.outputs.VERSION }}
+          name: Release ${{ steps.get_version.outputs.VERSION }}
           body: |
             See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
           draft: false
           prerelease: false
-
-      - name: Get Release ID
-        id: get_release_id
-        if: steps.check_release.outputs.exists == 'true'
-        run: |
-          RELEASE_ID=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/${GITHUB_REF#refs/tags/} | jq -r .id)
-          echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
-          UPLOAD_URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID | jq -r .upload_url)
-          echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
-
-      - name: Upload Release Asset (New Release)
-        if: steps.check_release.outputs.exists == 'false'
-        uses: actions/upload-release-asset@v1
+          files: |
+            ./build/google-calendar-widget.zip
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/google-calendar-widget.zip
-          asset_name: google-calendar-widget-${{ steps.get_version.outputs.VERSION }}.zip
-          asset_content_type: application/zip
-
-      - name: Upload Release Asset (Existing Release)
-        if: steps.check_release.outputs.exists == 'true'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release_id.outputs.upload_url }}
-          asset_path: ./build/google-calendar-widget.zip
-          asset_name: google-calendar-widget-${{ steps.get_version.outputs.VERSION }}.zip
-          asset_content_type: application/zip

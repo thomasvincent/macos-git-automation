@@ -44,7 +44,7 @@ jobs:
           phpcs --standard=PHPCompatibilityWP --extensions=php --report=summary --report-file=phpcs-compat-report.txt .
 
       - name: Upload PHPCS results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: phpcs-reports
           path: |
@@ -76,7 +76,7 @@ jobs:
           wpscan --no-banner --no-update --format json --output scan-results/wpscan-results.json --url https://example.com --plugins-detection aggressive --enumerate p --plugins-version-detection aggressive --api-token ${{ secrets.WPSCAN_API_TOKEN || '' }} || true
 
       - name: Upload WPScan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wpscan-results
           path: scan-results/
@@ -108,7 +108,7 @@ jobs:
           grep -r --include="*.php" "current_user_can" . > scan-results/permission-usage.txt
 
       - name: Upload sanitization check results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sanitization-check
           path: scan-results/
