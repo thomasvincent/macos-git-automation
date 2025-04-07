@@ -436,13 +436,11 @@ const google_calendar_widget = (function($) {
             
             for (let i = 0; i < len; i++) {
                 const entry = entries[i];
-                const title = entry.summary;
                 const startDateTime = getStartTime(entry);
                 const startJSDate = startDateTime ? startDateTime.getDate() : null;
-                let entryLinkHref = null;
                 
-                if (entry.htmlLink) {
-                    entryLinkHref = entry.htmlLink;
+                if (!startJSDate) {
+                    continue;
                 }
                 
                 const dateString = startJSDate.toString('MMM dd');
