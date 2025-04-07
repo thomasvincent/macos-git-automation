@@ -55,14 +55,19 @@ jobs:
       #     phpcs --standard=WordPress-VIP-Go --extensions=php --report=summary --report-file=phpcs-vip-report.txt .
       #     phpcs --standard=PHPCompatibilityWP --extensions=php --report=summary --report-file=phpcs-compat-report.txt .
 
+      # Create placeholder report files since PHPCS is disabled
+      - name: Create placeholder report files
+        run: |
+          mkdir -p phpcs-reports
+          echo "PHPCS checks temporarily disabled" > phpcs-reports/phpcs-report.txt
+          echo "PHPCS VIP checks temporarily disabled" > phpcs-reports/phpcs-vip-report.txt
+          echo "PHPCS compatibility checks temporarily disabled" > phpcs-reports/phpcs-compat-report.txt
+
       - name: Upload PHPCS results
         uses: actions/upload-artifact@v4
         with:
           name: phpcs-reports
-          path: |
-            phpcs-report.txt
-            phpcs-vip-report.txt
-            phpcs-compat-report.txt
+          path: phpcs-reports/
 
   wp-plugin-scan:
     name: WordPress Plugin Security Scan
