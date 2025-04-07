@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           composer install --no-dev --prefer-dist --no-progress
-          npm ci
+          npm install
 
       - name: Run tests
         run: |

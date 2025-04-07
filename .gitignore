@@ -29,7 +29,6 @@ composer.phar
 composer.lock
 
 # NPM
-package-lock.json
 npm-debug.log
 
 # WordPress Test Environment
