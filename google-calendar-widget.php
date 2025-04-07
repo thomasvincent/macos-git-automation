@@ -4,7 +4,7 @@
  * Plugin URI: http://notions.okuda.ca/wordpress-plugins/google-calendar-widget/
  * Description: This plugin adds a sidebar widget containing an agenda from a Google Calendar. It displays upcoming events from one or more Google Calendars in a customizable format.
  * Version: 2.1.0
- * Author: Kaz Okuda
+ * Author: Kaz Okuda, Thomas Vincent
  * Author URI: http://notions.okuda.ca
  * Text Domain: google-calendar-widget
  * Domain Path: /languages
@@ -14,6 +14,31 @@
  * Requires PHP: 7.2
  *
  * @package Google_Calendar_Widget
+ * @author Kaz Okuda
+ * @author Thomas Vincent (2025)
+ * @copyright 2020-2023 Kaz Okuda
+ * @copyright 2025 Thomas Vincent
+ * @license GPL-2.0+ https://www.gnu.org/licenses/gpl-2.0.txt
+ */
+
+/*
+ * Google Calendar Widget - Display Google Calendar events in WordPress
+ * Copyright (C) 2020-2023 Kaz Okuda
+ * Copyright (C) 2025 Thomas Vincent
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 // If this file is called directly, abort.
