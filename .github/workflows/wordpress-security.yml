@@ -1,0 +1,114 @@
+name: WordPress Security Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 1'  # Run every Monday at midnight
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  phpcs:
+    name: PHPCS WordPress Security
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          tools: composer, phpcs
+          extensions: mbstring, xml, intl
+
+      - name: Install dependencies
+        run: composer install --no-progress --no-suggest
+
+      - name: Install WordPress Coding Standards
+        run: |
+          composer global require wp-coding-standards/wpcs
+          composer global require phpcompatibility/phpcompatibility-wp
+          phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs,$HOME/.composer/vendor/phpcompatibility/php-compatibility,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-paragonie,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-wp
+
+      - name: Run PHPCS WordPress Security Scan
+        run: |
+          phpcs --standard=WordPress-Extra --extensions=php --report=summary --report-file=phpcs-report.txt .
+          phpcs --standard=WordPress-VIP-Go --extensions=php --report=summary --report-file=phpcs-vip-report.txt .
+          phpcs --standard=PHPCompatibilityWP --extensions=php --report=summary --report-file=phpcs-compat-report.txt .
+
+      - name: Upload PHPCS results
+        uses: actions/upload-artifact@v3
+        with:
+          name: phpcs-reports
+          path: |
+            phpcs-report.txt
+            phpcs-vip-report.txt
+            phpcs-compat-report.txt
+
+  wp-plugin-scan:
+    name: WordPress Plugin Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          extensions: mbstring, xml, intl
+
+      - name: Install WPScan
+        run: |
+          gem install wpscan
+
+      - name: Run WPScan on plugin
+        run: |
+          mkdir -p scan-results
+          wpscan --no-banner --no-update --format json --output scan-results/wpscan-results.json --url https://example.com --plugins-detection aggressive --enumerate p --plugins-version-detection aggressive --api-token ${{ secrets.WPSCAN_API_TOKEN || '' }} || true
+
+      - name: Upload WPScan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: wpscan-results
+          path: scan-results/
+
+  sanitization-check:
+    name: WordPress Sanitization Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          extensions: mbstring, xml, intl
+
+      - name: Check for unsanitized inputs
+        run: |
+          mkdir -p scan-results
+          grep -r --include="*.php" "\$_GET\|\$_POST\|\$_REQUEST\|\$_COOKIE\|\$_SERVER" . > scan-results/input-usage.txt
+          grep -r --include="*.php" "add_query_arg\|remove_query_arg" . > scan-results/query-arg-usage.txt
+          grep -r --include="*.php" "esc_" . > scan-results/escaping-usage.txt
+          grep -r --include="*.php" "sanitize_" . > scan-results/sanitization-usage.txt
+          grep -r --include="*.php" "wp_kses" . > scan-results/kses-usage.txt
+          grep -r --include="*.php" "nonce" . > scan-results/nonce-usage.txt
+          grep -r --include="*.php" "capability" . > scan-results/capability-usage.txt
+          grep -r --include="*.php" "current_user_can" . > scan-results/permission-usage.txt
+
+      - name: Upload sanitization check results
+        uses: actions/upload-artifact@v3
+        with:
+          name: sanitization-check
+          path: scan-results/
