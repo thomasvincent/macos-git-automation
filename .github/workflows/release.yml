@@ -45,7 +45,7 @@ jobs:
       - name: Build plugin
         run: |
           mkdir -p build/google-calendar-widget
-          cp -r *.php *.css *.js *.txt *.md languages examples build/google-calendar-widget/
+          cp -r *.php *.txt *.md languages examples build/google-calendar-widget/ || true
           cp -r assets includes build/google-calendar-widget/ || true
           cd build
           zip -r google-calendar-widget.zip google-calendar-widget
