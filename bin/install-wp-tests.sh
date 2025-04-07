@@ -120,27 +120,43 @@ install_test_suite() {
 			# Download includes files
 			echo "svn not found, using direct download instead"
 			
-			# Create a temporary directory for the zip file
-			local TEMP_DIR=$(mktemp -d)
-			local ZIP_FILE="$TEMP_DIR/wordpress-tests.zip"
+			# Instead of using GitHub zip, directly download the necessary files
+			echo "Downloading WordPress test files directly..."
 			
-			# Download the WordPress tests as a zip file
-			download "https://github.com/WordPress/wordpress-develop/archive/${WP_TESTS_TAG#tags/}.zip" "$ZIP_FILE"
+			# Download the includes files
+			mkdir -p "$WP_TESTS_DIR/includes"
 			
-			# Extract the zip file
-			unzip -q "$ZIP_FILE" -d "$TEMP_DIR"
-			
-			# Find the extracted directory
-			local EXTRACT_DIR=$(find "$TEMP_DIR" -type d -name "wordpress-develop-*" | head -n 1)
-			
-			# Copy the test files
-			if [ -d "$EXTRACT_DIR/tests/phpunit/includes" ]; then
-				cp -r "$EXTRACT_DIR/tests/phpunit/includes/"* "$WP_TESTS_DIR/includes/"
-				cp -r "$EXTRACT_DIR/tests/phpunit/data/"* "$WP_TESTS_DIR/data/" 2>/dev/null || true
+			# Determine the correct URL based on WP_TESTS_TAG
+			local BASE_URL
+			if [[ $WP_TESTS_TAG == trunk ]]; then
+				BASE_URL="https://raw.githubusercontent.com/WordPress/wordpress-develop/trunk/tests/phpunit"
+			elif [[ $WP_TESTS_TAG == branches/* ]]; then
+				local BRANCH=${WP_TESTS_TAG#branches/}
+				BASE_URL="https://raw.githubusercontent.com/WordPress/wordpress-develop/$BRANCH/tests/phpunit"
+			elif [[ $WP_TESTS_TAG == tags/* ]]; then
+				local TAG=${WP_TESTS_TAG#tags/}
+				BASE_URL="https://raw.githubusercontent.com/WordPress/wordpress-develop/$TAG/tests/phpunit"
+			else
+				echo "Unknown WordPress test tag: $WP_TESTS_TAG"
+				exit 1
 			fi
 			
-			# Clean up
-			rm -rf "$TEMP_DIR"
+			# Download essential test files
+			download "$BASE_URL/includes/bootstrap.php" "$WP_TESTS_DIR/includes/bootstrap.php"
+			download "$BASE_URL/includes/factory.php" "$WP_TESTS_DIR/includes/factory.php"
+			download "$BASE_URL/includes/functions.php" "$WP_TESTS_DIR/includes/functions.php"
+			download "$BASE_URL/includes/testcase.php" "$WP_TESTS_DIR/includes/testcase.php"
+			download "$BASE_URL/includes/trac.php" "$WP_TESTS_DIR/includes/trac.php"
+			download "$BASE_URL/includes/utils.php" "$WP_TESTS_DIR/includes/utils.php"
+			
+			# Create data directories
+			mkdir -p "$WP_TESTS_DIR/data/plugins"
+			mkdir -p "$WP_TESTS_DIR/data/themes/default"
+			
+			# Download some basic data files
+			download "$BASE_URL/data/plugins/hello.php" "$WP_TESTS_DIR/data/plugins/hello.php" 2>/dev/null || true
+			download "$BASE_URL/data/themes/default/style.css" "$WP_TESTS_DIR/data/themes/default/style.css" 2>/dev/null || true
+			download "$BASE_URL/data/themes/default/index.php" "$WP_TESTS_DIR/data/themes/default/index.php" 2>/dev/null || true
 		fi
 	fi
 
