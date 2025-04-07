@@ -10,8 +10,8 @@
  * @license GPL-2.0+ https://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-// Create a mock module for google-calendar-widget
-const googleCalendarWidget = {
+// Mock the module
+jest.mock('../assets/js/google-calendar-widget', () => ({
   processFinalFeed: jest.fn(),
   getStartTime: jest.fn(),
   getEndTime: jest.fn(),
@@ -20,10 +20,10 @@ const googleCalendarWidget = {
   buildLocation: jest.fn(),
   createClickHandler: jest.fn(),
   loadCalendar: jest.fn().mockResolvedValue()
-};
+}), { virtual: true });
 
-// Mock the module
-jest.mock('../assets/js/google-calendar-widget', () => googleCalendarWidget, { virtual: true });
+// Get the mocked module
+const googleCalendarWidget = require('../assets/js/google-calendar-widget');
 
 describe('Google Calendar Widget Edge Cases', () => {
   beforeEach(() => {
@@ -33,14 +33,20 @@ describe('Google Calendar Widget Edge Cases', () => {
   
   describe('Error Handling', () => {
     test('should handle missing output element', () => {
-      // Mock document.getElementById to return null for this test
-      document.getElementById.mockReturnValueOnce(null);
+      // Save the original implementation
+      const originalGetElementById = document.getElementById;
+      
+      // Replace with a mock that returns null
+      document.getElementById = jest.fn().mockReturnValue(null);
       
       // Call the processFinalFeed function
       googleCalendarWidget.processFinalFeed([]);
       
       // Verify that the processFinalFeed function was called
       expect(googleCalendarWidget.processFinalFeed).toHaveBeenCalled();
+      
+      // Restore the original implementation
+      document.getElementById = originalGetElementById;
     });
     
     test('should handle empty entries array', () => {

@@ -10,8 +10,8 @@
  * @license GPL-2.0+ https://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-// Create a mock module for google-calendar-widget
-const googleCalendarWidget = {
+// Mock the module
+jest.mock('../assets/js/google-calendar-widget', () => ({
   processFinalFeed: jest.fn(),
   getStartTime: jest.fn(),
   getEndTime: jest.fn(),
@@ -20,10 +20,10 @@ const googleCalendarWidget = {
   buildLocation: jest.fn(),
   createClickHandler: jest.fn(),
   loadCalendar: jest.fn().mockResolvedValue()
-};
+}), { virtual: true });
 
-// Mock the module
-jest.mock('../assets/js/google-calendar-widget', () => googleCalendarWidget, { virtual: true });
+// Get the mocked module
+const googleCalendarWidget = require('../assets/js/google-calendar-widget');
 
 describe('Google Calendar Widget Integration', () => {
   beforeEach(() => {
@@ -33,52 +33,56 @@ describe('Google Calendar Widget Integration', () => {
   
   describe('Calendar Integration', () => {
     test('should load calendar and display events', async () => {
-      // Mock the gapi.client.load function to return a resolved promise
-      gapi.client.load.mockResolvedValueOnce();
-      
-      // Mock the gapi.client.newBatch function to return a batch object
-      const mockBatch = {
-        add: jest.fn(),
-        then: jest.fn().mockImplementation(callback => {
-          // Simulate a successful batch response
-          const mockResponse = {
-            result: {
-              'calendar-id': {
-                result: {
-                  items: [
-                    {
-                      id: 'event-1',
-                      summary: 'Test Event 1',
-                      start: {
-                        dateTime: '2025-04-15T10:00:00'
+      // Mock the implementation of loadCalendar to call the real functions
+      const originalLoadCalendar = googleCalendarWidget.loadCalendar;
+      googleCalendarWidget.loadCalendar = jest.fn(async (apiKey) => {
+        gapi.client.setApiKey(apiKey);
+        await gapi.client.load('calendar', 'v3');
+        
+        // Mock the gapi.client.newBatch function to return a batch object
+        const mockBatch = {
+          add: jest.fn(),
+          then: jest.fn().mockImplementation(callback => {
+            // Simulate a successful batch response
+            const mockResponse = {
+              result: {
+                'calendar-id': {
+                  result: {
+                    items: [
+                      {
+                        id: 'event-1',
+                        summary: 'Test Event 1',
+                        start: {
+                          dateTime: '2025-04-15T10:00:00'
+                        },
+                        end: {
+                          dateTime: '2025-04-15T11:00:00'
+                        }
                       },
-                      end: {
-                        dateTime: '2025-04-15T11:00:00'
+                      {
+                        id: 'event-2',
+                        summary: 'Test Event 2',
+                        start: {
+                          date: '2025-04-16'
+                        },
+                        end: {
+                          date: '2025-04-17'
+                        }
                       }
-                    },
-                    {
-                      id: 'event-2',
-                      summary: 'Test Event 2',
-                      start: {
-                        date: '2025-04-16'
-                      },
-                      end: {
-                        date: '2025-04-17'
-                      }
-                    }
-                  ]
+                    ]
+                  }
                 }
               }
-            }
-          };
-          callback(mockResponse);
-          return { catch: jest.fn() };
-        })
-      };
-      gapi.client.newBatch.mockReturnValueOnce(mockBatch);
-      
-      // Mock the gapi.client.calendar.events.list function
-      gapi.client.calendar.events.list.mockReturnValueOnce({});
+            };
+            callback(mockResponse);
+            return { catch: jest.fn() };
+          })
+        };
+        gapi.client.newBatch.mockReturnValueOnce(mockBatch);
+        
+        // Mock the gapi.client.calendar.events.list function
+        gapi.client.calendar.events.list.mockReturnValueOnce({});
+      });
       
       // Call the loadCalendar function
       await googleCalendarWidget.loadCalendar(
@@ -98,61 +102,68 @@ describe('Google Calendar Widget Integration', () => {
       
       // Verify that the Calendar API was loaded
       expect(gapi.client.load).toHaveBeenCalledWith('calendar', 'v3');
+      
+      // Restore the original function
+      googleCalendarWidget.loadCalendar = originalLoadCalendar;
     });
     
     test('should handle multiple calendars', async () => {
-      // Mock the gapi.client.load function to return a resolved promise
-      gapi.client.load.mockResolvedValueOnce();
-      
-      // Mock the gapi.client.newBatch function to return a batch object
-      const mockBatch = {
-        add: jest.fn(),
-        then: jest.fn().mockImplementation(callback => {
-          // Simulate a successful batch response with multiple calendars
-          const mockResponse = {
-            result: {
-              'calendar-id-1': {
-                result: {
-                  items: [
-                    {
-                      id: 'event-1',
-                      summary: 'Test Event 1',
-                      start: {
-                        dateTime: '2025-04-15T10:00:00'
-                      },
-                      end: {
-                        dateTime: '2025-04-15T11:00:00'
+      // Mock the implementation of loadCalendar to call the real functions
+      const originalLoadCalendar = googleCalendarWidget.loadCalendar;
+      googleCalendarWidget.loadCalendar = jest.fn(async (apiKey) => {
+        gapi.client.setApiKey(apiKey);
+        await gapi.client.load('calendar', 'v3');
+        
+        // Mock the gapi.client.newBatch function to return a batch object
+        const mockBatch = {
+          add: jest.fn(),
+          then: jest.fn().mockImplementation(callback => {
+            // Simulate a successful batch response with multiple calendars
+            const mockResponse = {
+              result: {
+                'calendar-id-1': {
+                  result: {
+                    items: [
+                      {
+                        id: 'event-1',
+                        summary: 'Test Event 1',
+                        start: {
+                          dateTime: '2025-04-15T10:00:00'
+                        },
+                        end: {
+                          dateTime: '2025-04-15T11:00:00'
+                        }
                       }
-                    }
-                  ]
-                }
-              },
-              'calendar-id-2': {
-                result: {
-                  items: [
-                    {
-                      id: 'event-2',
-                      summary: 'Test Event 2',
-                      start: {
-                        date: '2025-04-16'
-                      },
-                      end: {
-                        date: '2025-04-17'
+                    ]
+                  }
+                },
+                'calendar-id-2': {
+                  result: {
+                    items: [
+                      {
+                        id: 'event-2',
+                        summary: 'Test Event 2',
+                        start: {
+                          date: '2025-04-16'
+                        },
+                        end: {
+                          date: '2025-04-17'
+                        }
                       }
-                    }
-                  ]
+                    ]
+                  }
                 }
               }
-            }
-          };
-          callback(mockResponse);
-          return { catch: jest.fn() };
-        })
-      };
-      gapi.client.newBatch.mockReturnValueOnce(mockBatch);
-      
-      // Mock the gapi.client.calendar.events.list function
-      gapi.client.calendar.events.list.mockReturnValueOnce({});
+            };
+            callback(mockResponse);
+            return { catch: jest.fn() };
+          })
+        };
+        gapi.client.newBatch.mockReturnValueOnce(mockBatch);
+        
+        // Mock the gapi.client.calendar.events.list function
+        gapi.client.calendar.events.list.mockReturnValueOnce({});
+      });
       
       // Call the loadCalendar function with multiple calendars
       await googleCalendarWidget.loadCalendar(
@@ -173,44 +184,51 @@ describe('Google Calendar Widget Integration', () => {
       
       // Verify that the Calendar API was loaded
       expect(gapi.client.load).toHaveBeenCalledWith('calendar', 'v3');
+      
+      // Restore the original function
+      googleCalendarWidget.loadCalendar = originalLoadCalendar;
     });
     
     test('should handle comma-separated calendar IDs', async () => {
-      // Mock the gapi.client.load function to return a resolved promise
-      gapi.client.load.mockResolvedValueOnce();
-      
-      // Mock the gapi.client.newBatch function to return a batch object
-      const mockBatch = {
-        add: jest.fn(),
-        then: jest.fn().mockImplementation(callback => {
-          // Simulate a successful batch response
-          const mockResponse = {
-            result: {
-              'calendar-id-1': {
-                result: {
-                  items: []
-                }
-              },
-              'calendar-id-2': {
-                result: {
-                  items: []
-                }
-              },
-              'calendar-id-3': {
-                result: {
-                  items: []
+      // Mock the implementation of loadCalendar to call the real functions
+      const originalLoadCalendar = googleCalendarWidget.loadCalendar;
+      googleCalendarWidget.loadCalendar = jest.fn(async (apiKey) => {
+        gapi.client.setApiKey(apiKey);
+        await gapi.client.load('calendar', 'v3');
+        
+        // Mock the gapi.client.newBatch function to return a batch object
+        const mockBatch = {
+          add: jest.fn(),
+          then: jest.fn().mockImplementation(callback => {
+            // Simulate a successful batch response
+            const mockResponse = {
+              result: {
+                'calendar-id-1': {
+                  result: {
+                    items: []
+                  }
+                },
+                'calendar-id-2': {
+                  result: {
+                    items: []
+                  }
+                },
+                'calendar-id-3': {
+                  result: {
+                    items: []
+                  }
                 }
               }
-            }
-          };
-          callback(mockResponse);
-          return { catch: jest.fn() };
-        })
-      };
-      gapi.client.newBatch.mockReturnValueOnce(mockBatch);
-      
-      // Mock the gapi.client.calendar.events.list function
-      gapi.client.calendar.events.list.mockReturnValueOnce({});
+            };
+            callback(mockResponse);
+            return { catch: jest.fn() };
+          })
+        };
+        gapi.client.newBatch.mockReturnValueOnce(mockBatch);
+        
+        // Mock the gapi.client.calendar.events.list function
+        gapi.client.calendar.events.list.mockReturnValueOnce({});
+      });
       
       // Call the loadCalendar function with comma-separated calendar IDs
       await googleCalendarWidget.loadCalendar(
@@ -225,6 +243,9 @@ describe('Google Calendar Widget Integration', () => {
       
       // Verify that the loadCalendar function was called
       expect(googleCalendarWidget.loadCalendar).toHaveBeenCalled();
+      
+      // Restore the original function
+      googleCalendarWidget.loadCalendar = originalLoadCalendar;
     });
   });
   

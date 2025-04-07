@@ -10,8 +10,8 @@
  * @license GPL-2.0+ https://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-// Create a mock module for google-calendar-widget
-const googleCalendarWidget = {
+// Mock the module
+jest.mock('../assets/js/google-calendar-widget', () => ({
   processFinalFeed: jest.fn(),
   getStartTime: jest.fn(),
   getEndTime: jest.fn(),
@@ -20,10 +20,10 @@ const googleCalendarWidget = {
   buildLocation: jest.fn(),
   createClickHandler: jest.fn(),
   loadCalendar: jest.fn().mockResolvedValue()
-};
+}), { virtual: true });
 
-// Mock the module
-jest.mock('../assets/js/google-calendar-widget', () => googleCalendarWidget, { virtual: true });
+// Get the mocked module
+const googleCalendarWidget = require('../assets/js/google-calendar-widget');
 
 describe('Google Calendar Widget Performance', () => {
   beforeEach(() => {

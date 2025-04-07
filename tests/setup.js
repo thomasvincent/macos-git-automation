@@ -96,11 +96,13 @@ process.memoryUsage = jest.fn(() => ({
 }));
 
 // Set up a mock Date object
-global.Date = class extends Date {
+const OriginalDate = global.Date;
+global.Date = class extends OriginalDate {
   constructor(...args) {
     if (args.length === 0) {
-      return new Date(2025, 3, 15, 10, 0, 0);
+      super(2025, 3, 15, 10, 0, 0);
+    } else {
+      super(...args);
     }
-    return new Date(...args);
   }
 };

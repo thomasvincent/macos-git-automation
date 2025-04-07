@@ -55,7 +55,10 @@ module.exports = {
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   testPathIgnorePatterns: [
     '/node_modules/',
-    '/vendor/'
+    '/vendor/',
+    '/tests/mocks/',
+    '/tests/setup.js',
+    '/tests/setup-jest.js'
   ],
   
   // Indicates whether each individual test should be reported during the run
