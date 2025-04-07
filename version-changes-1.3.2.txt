@@ -1,2 +1,0 @@
-- Removed version number from Google jsapi
-- Removed script includes from admin interface

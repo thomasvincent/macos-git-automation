@@ -1,3 +1,0 @@
-- Made URL of apis.google.com protocol relative
-- Added initial support for localization
-- Added support for <br> and <p> tags in title format

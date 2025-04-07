@@ -1,1 +1,0 @@
-Added 'Expand Entries by Default' checkbox to widget settings to auto expand all the calendar entries.

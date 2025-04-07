@@ -1,5 +1,0 @@
-- Replaced WP_PLUGIN_URL with plugins_url
-- Fixed Google Console URL in settings
-- Added error handling to batch query
-- Entry expands with time and location even without description
-- Removed unused code
