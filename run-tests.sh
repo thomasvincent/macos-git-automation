@@ -1,12 +1,14 @@
 #!/bin/bash
 
+set -e  # Exit immediately if a command exits with a non-zero status
+
 echo "Running JavaScript tests..."
-npm test || echo "JavaScript tests failed, but continuing"
+npm test
 
 echo "Running PHP CodeSniffer..."
-composer phpcs || echo "PHP CodeSniffer failed, but continuing"
+composer phpcs
 
 echo "Running PHP tests..."
-composer test || echo "PHP tests failed, but continuing"
+composer test
 
 echo "Tests completed."

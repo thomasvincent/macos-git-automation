@@ -24,6 +24,8 @@ This project follows the [GitHub Flow](https://guides.github.com/introduction/fl
 
 ### Setting Up the Development Environment
 
+#### Standard Setup
+
 1. Clone the repository:
    ```
    git clone https://github.com/yourusername/google-calendar-widget.git
@@ -41,7 +43,26 @@ This project follows the [GitHub Flow](https://guides.github.com/introduction/fl
    bin/install-wp-tests.sh wordpress_test root root localhost latest
    ```
 
+#### Docker Setup (Recommended)
+
+We provide a Docker setup that simplifies the development environment setup:
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/google-calendar-widget.git
+   cd google-calendar-widget
+   ```
+
+2. Run the Docker environment:
+   ```
+   docker-compose up
+   ```
+
+This will set up the entire development environment, including PHP, Node.js, and MySQL, and run all tests.
+
 ### Running Tests
+
+#### Standard Setup
 
 - Run PHP tests:
   ```
@@ -57,6 +78,22 @@ This project follows the [GitHub Flow](https://guides.github.com/introduction/fl
   ```
   composer phpcs
   ```
+
+#### Docker Setup
+
+- Run all tests:
+  ```
+  docker-compose up
+  ```
+
+- Run specific tests:
+  ```
+  docker-compose run wordpress-plugin composer test
+  docker-compose run wordpress-plugin npm test
+  docker-compose run wordpress-plugin composer phpcs
+  ```
+
+See [DOCKER.md](DOCKER.md) for more details on the Docker setup.
 
 ### Coding Standards
 

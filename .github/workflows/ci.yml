@@ -10,102 +10,16 @@ permissions:
   contents: read
 
 jobs:
-  php-tests:
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        php-version: [7.4, 8.0, 8.1, 8.2]
-        wordpress-version: [latest, '6.4', '6.3', '6.2']
-      fail-fast: false
-        
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: wordpress_test
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-version }}
-        extensions: mbstring, intl, pdo_mysql
-        coverage: xdebug
-        
-    - name: Install Composer dependencies
-      run: composer install --prefer-dist --no-progress --no-interaction
-      
-    - name: Configure Composer for PHPCS
-      run: composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-      
-    - name: Setup WordPress test environment
-      run: |
-        bash bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wordpress-version }}
-        
-    - name: Run PHP tests
-      run: composer test
-      
-    - name: Run PHP CodeSniffer
-      run: composer phpcs
-      continue-on-error: true
-  
-  js-tests:
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x, 20.x]
-      fail-fast: false
-        
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: npm
-        
-    - name: Install dependencies
-      run: npm install --legacy-peer-deps || npm install --force
-      
-    - name: Run JavaScript tests
-      run: npm test
-      
-    - name: Run JavaScript linting
-      run: npm run lint
-      continue-on-error: true
-      
-  wordpress-coding-standards:
+  docker-tests:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.0'
-        tools: composer, phpcs
-        extensions: mbstring, xml, intl
-        
-    - name: Configure Composer for PHPCS
-      run: composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-      
-    - name: Install WordPress Coding Standards
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build and run tests with Docker
       run: |
-        composer global require wp-coding-standards/wpcs
-        composer global require phpcompatibility/phpcompatibility-wp
-        phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs,$HOME/.composer/vendor/phpcompatibility/php-compatibility,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-paragonie,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-wp
-        
-    - name: Run PHPCS WordPress Coding Standards
-      run: |
-        phpcs --standard=WordPress --extensions=php --report=summary .
-      continue-on-error: true
+        docker-compose build
+        docker-compose up --abort-on-container-exit

@@ -2,9 +2,9 @@ name: WordPress Security Checks
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   schedule:
     - cron: '0 0 * * 1'  # Run every Monday at midnight
 
@@ -13,109 +13,102 @@ permissions:
   security-events: write
 
 jobs:
-  phpcs:
-    name: PHPCS WordPress Security
+  security-checks:
+    name: WordPress Security Checks
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.0'
-          tools: composer, phpcs
-          extensions: mbstring, xml, intl
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Install dependencies
-        run: composer install --no-progress --no-interaction || echo "No composer.json found or install failed, continuing anyway"
-
-      - name: Configure Composer for PHPCS
-        run: composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-
-      - name: Install WordPress Coding Standards
+      # Create a custom Dockerfile for security checks
+      - name: Create Security Dockerfile
         run: |
-          composer global require wp-coding-standards/wpcs
-          composer global require phpcompatibility/phpcompatibility-wp
-          phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs,$HOME/.composer/vendor/phpcompatibility/php-compatibility,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-paragonie,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-wp
+          cat > Dockerfile.security << 'EOF'
+          FROM php:8.0-cli
 
-      - name: Run PHPCS WordPress Security Scan
+          # Install system dependencies
+          RUN apt-get update && apt-get install -y \
+              git \
+              unzip \
+              libzip-dev \
+              libxml2-dev \
+              nodejs \
+              npm \
+              default-mysql-client \
+              curl \
+              ruby \
+              ruby-dev \
+              && docker-php-ext-install zip pdo_mysql mysqli intl \
+              && gem install wpscan
+
+          # Install Composer
+          COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+          # Set working directory
+          WORKDIR /var/www/html
+
+          # Create a non-root user
+          RUN useradd -m wordpress && \
+              chown -R wordpress:wordpress /var/www/html
+
+          # Copy project files
+          COPY --chown=wordpress:wordpress . .
+
+          # Switch to non-root user
+          USER wordpress
+
+          # Install PHP dependencies
+          RUN composer install
+
+          # Install WordPress Coding Standards and dependencies
+          RUN composer global require wp-coding-standards/wpcs \
+              phpcompatibility/phpcompatibility-wp \
+              phpcsstandards/phpcsutils \
+              phpcsstandards/phpcsextra \
+              && composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
+              && vendor/bin/phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs,$HOME/.composer/vendor/phpcompatibility/php-compatibility,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-paragonie,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-wp,$HOME/.composer/vendor/phpcsstandards/phpcsutils,$HOME/.composer/vendor/phpcsstandards/phpcsextra
+
+          # Create directory for scan results
+          RUN mkdir -p scan-results
+
+          # Run security checks
+          CMD bash -c " \
+              echo 'Running PHPCS WordPress Security Scan...' && \
+              vendor/bin/phpcs --standard=WordPress-Extra --extensions=php --report=summary --report-file=scan-results/phpcs-report.txt . || true && \
+              vendor/bin/phpcs --standard=WordPress-VIP-Go --extensions=php --report=summary --report-file=scan-results/phpcs-vip-report.txt . || true && \
+              vendor/bin/phpcs --standard=PHPCompatibilityWP --extensions=php --report=summary --report-file=scan-results/phpcs-compat-report.txt . || true && \
+              \
+              echo 'Running sanitization checks...' && \
+              grep -r --include='*.php' '\$_GET\\|\$_POST\\|\$_REQUEST\\|\$_COOKIE\\|\$_SERVER' . > scan-results/input-usage.txt || echo 'No direct input usage found' > scan-results/input-usage.txt && \
+              grep -r --include='*.php' 'add_query_arg\\|remove_query_arg' . > scan-results/query-arg-usage.txt || echo 'No query arg usage found' > scan-results/query-arg-usage.txt && \
+              grep -r --include='*.php' 'esc_' . > scan-results/escaping-usage.txt || echo 'No escaping functions found' > scan-results/escaping-usage.txt && \
+              grep -r --include='*.php' 'sanitize_' . > scan-results/sanitization-usage.txt || echo 'No sanitization functions found' > scan-results/sanitization-usage.txt && \
+              grep -r --include='*.php' 'wp_kses' . > scan-results/kses-usage.txt || echo 'No kses usage found' > scan-results/kses-usage.txt && \
+              grep -r --include='*.php' 'nonce' . > scan-results/nonce-usage.txt || echo 'No nonce usage found' > scan-results/nonce-usage.txt && \
+              grep -r --include='*.php' 'capability' . > scan-results/capability-usage.txt || echo 'No capability checks found' > scan-results/capability-usage.txt && \
+              grep -r --include='*.php' 'current_user_can' . > scan-results/permission-usage.txt || echo 'No permission checks found' > scan-results/permission-usage.txt && \
+              \
+              echo 'Running WPScan...' && \
+              if command -v wpscan &> /dev/null; then \
+                wpscan --no-banner --no-update --format json --output scan-results/wpscan-results.json --url https://example.com --plugins-detection aggressive --enumerate p --plugins-version-detection aggressive || echo 'WPScan failed, but continuing'; \
+              else \
+                echo 'WPScan not available, skipping scan' > scan-results/wpscan-results.txt; \
+              fi \
+              "
+          EOF
+
+      - name: Build and run security checks
         run: |
-          phpcs --standard=WordPress-Extra --extensions=php --report=summary --report-file=phpcs-report.txt . || true
-          phpcs --standard=WordPress-VIP-Go --extensions=php --report=summary --report-file=phpcs-vip-report.txt . || true
-          phpcs --standard=PHPCompatibilityWP --extensions=php --report=summary --report-file=phpcs-compat-report.txt . || true
+          docker build -t wordpress-security-checks -f Dockerfile.security .
+          docker run --name security-container wordpress-security-checks
+          docker cp security-container:/var/www/html/scan-results ./scan-results
 
-      - name: Upload PHPCS results
+      - name: Upload security check results
         uses: actions/upload-artifact@v4
         with:
-          name: phpcs-reports
-          path: |
-            phpcs-report.txt
-            phpcs-vip-report.txt
-            phpcs-compat-report.txt
-
-  wp-plugin-scan:
-    name: WordPress Plugin Security Scan
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.0'
-          extensions: mbstring, xml, intl
-
-      - name: Install WPScan
-        run: |
-          gem install wpscan || echo "WPScan installation failed, continuing anyway"
-
-      - name: Run WPScan on plugin
-        run: |
-          mkdir -p scan-results
-          if command -v wpscan &> /dev/null; then
-            wpscan --no-banner --no-update --format json --output scan-results/wpscan-results.json --url https://example.com --plugins-detection aggressive --enumerate p --plugins-version-detection aggressive --api-token ${{ secrets.WPSCAN_API_TOKEN || '' }} || echo "WPScan failed, but continuing"
-          else
-            echo "WPScan not available, skipping scan" > scan-results/wpscan-results.txt
-          fi
-
-      - name: Upload WPScan results
-        uses: actions/upload-artifact@v4
-        with:
-          name: wpscan-results
-          path: scan-results/
-
-  sanitization-check:
-    name: WordPress Sanitization Check
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.0'
-          extensions: mbstring, xml, intl
-
-      - name: Check for unsanitized inputs
-        run: |
-          mkdir -p scan-results
-          grep -r --include="*.php" "\$_GET\|\$_POST\|\$_REQUEST\|\$_COOKIE\|\$_SERVER" . > scan-results/input-usage.txt || echo "No direct input usage found" > scan-results/input-usage.txt
-          grep -r --include="*.php" "add_query_arg\|remove_query_arg" . > scan-results/query-arg-usage.txt || echo "No query arg usage found" > scan-results/query-arg-usage.txt
-          grep -r --include="*.php" "esc_" . > scan-results/escaping-usage.txt || echo "No escaping functions found" > scan-results/escaping-usage.txt
-          grep -r --include="*.php" "sanitize_" . > scan-results/sanitization-usage.txt || echo "No sanitization functions found" > scan-results/sanitization-usage.txt
-          grep -r --include="*.php" "wp_kses" . > scan-results/kses-usage.txt || echo "No kses usage found" > scan-results/kses-usage.txt
-          grep -r --include="*.php" "nonce" . > scan-results/nonce-usage.txt || echo "No nonce usage found" > scan-results/nonce-usage.txt
-          grep -r --include="*.php" "capability" . > scan-results/capability-usage.txt || echo "No capability checks found" > scan-results/capability-usage.txt
-          grep -r --include="*.php" "current_user_can" . > scan-results/permission-usage.txt || echo "No permission checks found" > scan-results/permission-usage.txt
-
-      - name: Upload sanitization check results
-        uses: actions/upload-artifact@v4
-        with:
-          name: sanitization-check
+          name: security-check-results
           path: scan-results/

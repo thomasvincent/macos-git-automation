@@ -18,37 +18,67 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.0
-          extensions: mbstring, intl
-          coverage: none
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 16.x
-          cache: npm
-
-      - name: Install dependencies
+      - name: Create Release Dockerfile
         run: |
-          composer install --no-dev --prefer-dist --no-progress
-          npm install
+          cat > Dockerfile.release << 'EOF'
+          FROM php:8.0-cli
 
-      - name: Run tests
-        run: |
-          npm test
-          composer test || echo "PHP tests failed, but continuing"
-        continue-on-error: true
+          # Install system dependencies
+          RUN apt-get update && apt-get install -y \
+              git \
+              unzip \
+              libzip-dev \
+              libxml2-dev \
+              nodejs \
+              npm \
+              zip \
+              && docker-php-ext-install zip pdo_mysql mysqli intl
 
-      - name: Build plugin
+          # Install Composer
+          COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+          # Set working directory
+          WORKDIR /var/www/html
+
+          # Create a non-root user
+          RUN useradd -m wordpress && \
+              chown -R wordpress:wordpress /var/www/html
+
+          # Copy project files
+          COPY --chown=wordpress:wordpress . .
+
+          # Switch to non-root user
+          USER wordpress
+
+          # Install PHP dependencies
+          RUN composer install --no-dev --prefer-dist --no-progress
+
+          # Install Node.js dependencies
+          RUN npm install
+
+          # Run tests
+          RUN npm test || echo "JavaScript tests failed, but continuing" && \
+              composer test || echo "PHP tests failed, but continuing"
+
+          # Build plugin
+          RUN mkdir -p build/google-calendar-widget && \
+              cp -r *.php *.txt *.md languages examples build/google-calendar-widget/ || true && \
+              cp -r assets includes build/google-calendar-widget/ || true && \
+              cd build && \
+              zip -r google-calendar-widget.zip google-calendar-widget
+
+          # Command to keep container running for artifact extraction
+          CMD ["tail", "-f", "/dev/null"]
+          EOF
+
+      - name: Build and run release container
         run: |
-          mkdir -p build/google-calendar-widget
-          cp -r *.php *.txt *.md languages examples build/google-calendar-widget/ || true
-          cp -r assets includes build/google-calendar-widget/ || true
-          cd build
-          zip -r google-calendar-widget.zip google-calendar-widget
+          docker build -t wordpress-release -f Dockerfile.release .
+          docker run -d --name release-container wordpress-release
+          docker cp release-container:/var/www/html/build/google-calendar-widget.zip ./google-calendar-widget.zip
 
       - name: Get version from tag
         id: get_version
@@ -63,7 +93,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./build/google-calendar-widget.zip
+            ./google-calendar-widget.zip
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
