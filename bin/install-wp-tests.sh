@@ -208,8 +208,25 @@ install_db() {
 		fi
 	fi
 
+	# Check if MySQL is running
+	echo "Checking MySQL connection..."
+	if ! mysqladmin ping --host=$DB_HOSTNAME --user="$DB_USER" --password="$DB_PASS"$EXTRA -s; then
+		echo "Error: Cannot connect to MySQL server. Please check if MySQL is running."
+		exit 1
+	fi
+
 	# create database (ignore error if it already exists)
+	echo "Creating database $DB_NAME..."
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA || true
+
+	# Verify database was created
+	echo "Verifying database $DB_NAME exists..."
+	if ! mysql --host=$DB_HOSTNAME --user="$DB_USER" --password="$DB_PASS"$EXTRA -e "USE $DB_NAME"; then
+		echo "Error: Database $DB_NAME could not be created or accessed."
+		exit 1
+	fi
+
+	echo "Database setup completed successfully."
 }
 
 install_wp
