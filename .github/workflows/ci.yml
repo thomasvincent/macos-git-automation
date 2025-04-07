@@ -77,7 +77,7 @@ jobs:
         cache: npm
         
     - name: Install dependencies
-      run: npm install || echo "npm install failed, continuing anyway"
+      run: npm install --legacy-peer-deps || npm install --force || echo "npm install failed, continuing anyway"
       
     - name: Run JavaScript tests
       run: npm test || echo "JavaScript tests failed, but continuing"
