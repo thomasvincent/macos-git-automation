@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Calendar Widget - Standalone Example</title>
+    <link type="text/css" rel="stylesheet" href="../ko-calendar.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #0073aa;
+            margin-top: 0;
+        }
+        
+        .calendar-container {
+            border: 1px solid #bfbfbf;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .ko-calendar-widget-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .instructions {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-left: 4px solid #0073aa;
+            margin: 20px 0;
+        }
+        
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Google Calendar Widget - Standalone Example</h1>
+        
+        <div class="instructions">
+            <p><strong>Instructions:</strong> Replace <code>YOUR_API_KEY_HERE</code> in the script below with your Google API key. You can also customize the calendar IDs to display your own calendars.</p>
+            <p>To get a Google API key:</p>
+            <ol>
+                <li>Go to <a href="https://console.developers.google.com" target="_blank">https://console.developers.google.com</a></li>
+                <li>Create or select a project</li>
+                <li>Enable the Google Calendar API</li>
+                <li>Create an API key</li>
+                <li>Restrict the API key to your domain for security</li>
+            </ol>
+        </div>
+        
+        <div class="calendar-container">
+            <div class="ko-calendar-widget-title" id="ko_calendar-widget_title">Example Calendar</div>
+            <div class="ko-calendar-widget-events" id="ko_calendar-widget_events">
+                <div class="ko-calendar-widget-loading">
+                    <img class="ko-calendar-widget-image" src="../loading.gif" alt="Loading..."/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the required scripts -->
+    <script type="text/javascript" src="../date.js"></script>
+    <script type="text/javascript" src="../wiky.js"></script>
+    <script type="text/javascript" src="../ko-calendar.js"></script>
+    <script type="text/javascript" src="https://apis.google.com/js/client.js?onload=ko_calendar_google_init"></script>
+    
+    <!-- Initialize the calendar -->
+    <script type="text/javascript">
+        // Enable debug mode to see console logs
+        window.koCalendarDebug = true;
+        
+        // Initialize the calendar when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            ko_calendar.loadCalendarDefered(
+                'YOUR_API_KEY_HERE', // Replace with your Google API key
+                'ko_calendar-widget_title',
+                'ko_calendar-widget_events',
+                10, // Maximum number of events to display
+                false, // Auto-expand events
+                'developer-calendar@google.com', // Primary calendar ID
+                'canadian@holiday.calendar.google.com', // Secondary calendar ID (optional)
+                '', // Tertiary calendar ID (optional)
+                '[STARTTIME - ][TITLE]' // Event title format
+            );
+        });
+    </script>
+</body>
+</html>

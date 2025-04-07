@@ -1,0 +1,46 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+._*
+.Spotlight-V100
+.Trashes
+
+# Editor Files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# Dependency Directories
+node_modules/
+vendor/
+
+# Build and Test Directories
+/build/
+/dist/
+/coverage/
+
+# Composer
+composer.phar
+composer.lock
+
+# NPM
+package-lock.json
+npm-debug.log
+
+# WordPress Test Environment
+/tmp/
+/wordpress/
+/wordpress-tests-lib/
+
+# Environment Files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log

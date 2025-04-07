@@ -1,0 +1,48 @@
+{
+  "name": "google-calendar-widget",
+  "version": "2.0.0",
+  "description": "WordPress plugin for displaying Google Calendar events in a widget",
+  "main": "ko-calendar.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/google-calendar-widget.git"
+  },
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "google",
+    "calendar",
+    "widget"
+  ],
+  "author": "Kaz Okuda",
+  "license": "GPL-2.0-or-later",
+  "bugs": {
+    "url": "https://github.com/yourusername/google-calendar-widget/issues"
+  },
+  "homepage": "https://github.com/yourusername/google-calendar-widget#readme",
+  "devDependencies": {
+    "jest": "^29.5.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/test-*.js"
+    ],
+    "collectCoverageFrom": [
+      "ko-calendar.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+/**
+ * Google Calendar Widget Styles
+ *
+ * @package Google_Calendar_Widget
+ * @version 2.0.0
+ */
+
+/* Loading indicator */
+.ko-calendar-widget-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    text-align: center;
+}
+
+.ko-calendar-widget-image {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Date headers */
+.ko-calendar-date {
+    margin-top: 12px;
+    margin-bottom: 6px;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 4px;
+}
+
+/* Event list container */
+.ko-calendar-event-list {
+    margin: 0 0 12px 0;
+    padding: 0 4px;
+}
+
+/* Event title links */
+.ko-calendar-entry-title {
+    display: block;
+    padding: 6px 0;
+    color: #0073aa;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.ko-calendar-entry-title:hover {
+    color: #00a0d2;
+    text-decoration: underline;
+}
+
+/* Event details */
+.ko-calendar-entry-date-row {
+    padding-top: 6px;
+    color: #555;
+}
+
+.ko-calendar-entry-date-label {
+    font-weight: bold;
+}
+
+.ko-calendar-entry-date-text {
+    margin-bottom: 4px;
+}
+
+.ko-calendar-entry-location-text {
+    margin-bottom: 8px;
+    color: #555;
+    font-style: italic;
+}
+
+.ko-calendar-entry-body {
+    margin: 8px 0 12px 0;
+    line-height: 1.5;
+}
+
+/* Indent paragraphs in event body */
+.ko-calendar-entry-body p {
+    margin: 0 0 8px 0;
+}
+
+/* Error messages */
+.ko-calendar-error {
+    color: #d54e21;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-left: 4px solid #d54e21;
+    margin: 10px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .ko-calendar-date {
+        font-size: 1em;
+    }
+    
+    .ko-calendar-entry-title {
+        padding: 8px 0;
+    }
+}
