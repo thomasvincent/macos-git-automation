@@ -17,6 +17,7 @@ jobs:
       matrix:
         php-version: [7.4, 8.0, 8.1, 8.2]
         wordpress-version: [latest, '6.4', '6.3', '6.2']
+      fail-fast: false
         
     services:
       mysql:
@@ -39,25 +40,20 @@ jobs:
         coverage: xdebug
         
     - name: Install Composer dependencies
-      run: composer install --prefer-dist --no-progress --no-interaction || echo "No composer.json found or install failed, continuing anyway"
+      run: composer install --prefer-dist --no-progress --no-interaction
       
     - name: Configure Composer for PHPCS
-      run: composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true || echo "Composer plugin configuration failed, continuing anyway"
+      run: composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
       
     - name: Setup WordPress test environment
       run: |
-        if [ -f "bin/install-wp-tests.sh" ]; then
-          bash bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wordpress-version }}
-        else
-          echo "WordPress test setup script not found, skipping"
-        fi
+        bash bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wordpress-version }}
         
     - name: Run PHP tests
-      run: composer test || echo "PHP tests failed, but continuing"
-      continue-on-error: true
+      run: composer test
       
     - name: Run PHP CodeSniffer
-      run: composer phpcs || echo "PHP CodeSniffer failed, but continuing"
+      run: composer phpcs
       continue-on-error: true
   
   js-tests:
@@ -66,6 +62,7 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x, 18.x, 20.x]
+      fail-fast: false
         
     steps:
     - uses: actions/checkout@v4
@@ -77,14 +74,13 @@ jobs:
         cache: npm
         
     - name: Install dependencies
-      run: npm install --legacy-peer-deps || npm install --force || echo "npm install failed, continuing anyway"
+      run: npm install --legacy-peer-deps || npm install --force
       
     - name: Run JavaScript tests
-      run: npm test || echo "JavaScript tests failed, but continuing"
-      continue-on-error: true
+      run: npm test
       
     - name: Run JavaScript linting
-      run: npm run lint || echo "JavaScript linting failed, continuing anyway"
+      run: npm run lint
       continue-on-error: true
       
   wordpress-coding-standards:
@@ -111,5 +107,5 @@ jobs:
         
     - name: Run PHPCS WordPress Coding Standards
       run: |
-        phpcs --standard=WordPress --extensions=php --report=summary . || echo "WordPress coding standards check failed, but continuing"
+        phpcs --standard=WordPress --extensions=php --report=summary .
       continue-on-error: true

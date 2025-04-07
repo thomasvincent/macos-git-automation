@@ -107,50 +107,51 @@ install_test_suite() {
 		# set up testing suite
 		mkdir -p $WP_TESTS_DIR
 		
-		# Check if svn is installed
-		if command -v svn >/dev/null 2>&1; then
-			# Use svn if available
-			svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/includes/ $WP_TESTS_DIR/includes
-			svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ $WP_TESTS_DIR/data
+		# Determine WordPress version for URL construction
+		local WP_VERSION_PATH
+		if [[ $WP_TESTS_TAG == trunk ]]; then
+			WP_VERSION_PATH="trunk"
+		elif [[ $WP_TESTS_TAG == branches/* ]]; then
+			WP_VERSION_PATH=${WP_TESTS_TAG#branches/}
+		elif [[ $WP_TESTS_TAG == tags/* ]]; then
+			WP_VERSION_PATH=${WP_TESTS_TAG#tags/}
 		else
-			# Use direct file download as fallback
-			echo "svn not found, using direct file download instead"
-			
-			# Create necessary directories
-			mkdir -p "$WP_TESTS_DIR/includes"
-			mkdir -p "$WP_TESTS_DIR/data/plugins"
-			mkdir -p "$WP_TESTS_DIR/data/themes/default"
-			
-			# Determine WordPress version for URL construction
-			local WP_VERSION_PATH
-			if [[ $WP_TESTS_TAG == trunk ]]; then
-				WP_VERSION_PATH="trunk"
-			elif [[ $WP_TESTS_TAG == branches/* ]]; then
-				WP_VERSION_PATH=${WP_TESTS_TAG#branches/}
-			elif [[ $WP_TESTS_TAG == tags/* ]]; then
-				WP_VERSION_PATH=${WP_TESTS_TAG#tags/}
-			else
-				echo "Unknown WordPress test tag: $WP_TESTS_TAG"
-				exit 1
-			fi
-			
-			# Download essential include files
-			for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php; do
-				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file"
-			done
-			
-			# Create minimal data structure
-			mkdir -p "$WP_TESTS_DIR/includes/factory"
-			echo "<?php
-class WP_UnitTest_Factory_For_Thing {
-	function create() { return 1; }
-	function create_many() { return array(1); }
-	function create_and_get() { return (object)array('id' => 1); }
-}
-" > "$WP_TESTS_DIR/includes/factory/class-wp-unittest-factory-for-thing.php"
-			
-			# Create a minimal hello.php plugin
-			echo "<?php
+			echo "Unknown WordPress test tag: $WP_TESTS_TAG"
+			exit 1
+		fi
+		
+		# Create necessary directories
+		mkdir -p "$WP_TESTS_DIR/includes"
+		mkdir -p "$WP_TESTS_DIR/data/plugins"
+		mkdir -p "$WP_TESTS_DIR/data/themes/default"
+		
+		# Download essential include files
+		echo "Downloading WordPress test files from GitHub..."
+		
+		# Core test files
+		for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php; do
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file"
+		done
+		
+		# Class files
+		for file in class-basic-object.php class-wp-rest-server.php class-wp-fake-request.php class-wp-test-stream.php class-wp-test-rest-controller.php class-wp-test-spy-rest-server.php; do
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file"
+		done
+		
+		# Factory classes
+		mkdir -p "$WP_TESTS_DIR/includes/factory"
+		for file in class-wp-unittest-factory.php class-wp-unittest-factory-for-attachment.php class-wp-unittest-factory-for-blog.php class-wp-unittest-factory-for-bookmark.php class-wp-unittest-factory-for-comment.php class-wp-unittest-factory-for-network.php class-wp-unittest-factory-for-post.php class-wp-unittest-factory-for-term.php class-wp-unittest-factory-for-thing.php class-wp-unittest-factory-for-user.php class-wp-unittest-factory-callback-after-create.php class-wp-unittest-generator.php; do
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/factory/$file" "$WP_TESTS_DIR/includes/factory/$file"
+		done
+		
+		# REST API test files
+		mkdir -p "$WP_TESTS_DIR/includes/rest-api"
+		for file in class-wp-rest-test-search-handler.php class-wp-test-rest-controller-testcase.php class-wp-test-rest-post-type-controller-testcase.php class-wp-test-rest-testcase.php; do
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/rest-api/$file" "$WP_TESTS_DIR/includes/rest-api/$file"
+		done
+		
+		# Create a minimal hello.php plugin
+		echo "<?php
 /**
  * Plugin Name: Hello Dolly
  * Plugin URI: http://wordpress.org/plugins/hello-dolly/
@@ -160,43 +161,29 @@ class WP_UnitTest_Factory_For_Thing {
  * Author URI: http://ma.tt/
  */
 " > "$WP_TESTS_DIR/data/plugins/hello.php"
-			
-			# Create minimal theme files
-			echo "/*
+		
+		# Create minimal theme files
+		echo "/*
 Theme Name: Default
 */" > "$WP_TESTS_DIR/data/themes/default/style.css"
-			
-			echo "<?php
+		
+		echo "<?php
 // Silence is golden.
 " > "$WP_TESTS_DIR/data/themes/default/index.php"
-		fi
 	fi
 
-	if [ ! -f wp-tests-config.php ]; then
+	if [ ! -f "$WP_TESTS_DIR/wp-tests-config.php" ]; then
 		# Download config file
-		if command -v svn >/dev/null 2>&1; then
-			download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
-		else
-			# Use GitHub as fallback
-			local WP_VERSION_PATH
-			if [[ $WP_TESTS_TAG == trunk ]]; then
-				WP_VERSION_PATH="trunk"
-			elif [[ $WP_TESTS_TAG == branches/* ]]; then
-				WP_VERSION_PATH=${WP_TESTS_TAG#branches/}
-			elif [[ $WP_TESTS_TAG == tags/* ]]; then
-				WP_VERSION_PATH=${WP_TESTS_TAG#tags/}
-			fi
-			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/wp-tests-config-sample.php" "$WP_TESTS_DIR"/wp-tests-config.php
-		fi
+		download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/wp-tests-config-sample.php" "$WP_TESTS_DIR/wp-tests-config.php"
 		
 		# Edit the config file
 		# remove all forward slashes in the end
 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
-		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
-		sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" "$WP_TESTS_DIR"/wp-tests-config.php
-		sed $ioption "s/yourusernamehere/$DB_USER/" "$WP_TESTS_DIR"/wp-tests-config.php
-		sed $ioption "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR"/wp-tests-config.php
-		sed $ioption "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR"/wp-tests-config.php
+		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR/wp-tests-config.php"
+		sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" "$WP_TESTS_DIR/wp-tests-config.php"
+		sed $ioption "s/yourusernamehere/$DB_USER/" "$WP_TESTS_DIR/wp-tests-config.php"
+		sed $ioption "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR/wp-tests-config.php"
+		sed $ioption "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR/wp-tests-config.php"
 	fi
 }
 
@@ -224,9 +211,6 @@ install_db() {
 	# create database (ignore error if it already exists)
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA || true
 }
-
-# Always pull latest changes before running
-git pull origin main || echo "Failed to pull from origin main, continuing anyway"
 
 install_wp
 install_test_suite
