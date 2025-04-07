@@ -1,0 +1,25 @@
+# This file defines the code owners for the repository
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @thomasvincent
+
+# PHP files
+*.php @thomasvincent
+
+# JavaScript files
+*.js @thomasvincent
+
+# CSS files
+*.css @thomasvincent
+
+# WordPress-specific files
+includes/ @thomasvincent
+assets/ @thomasvincent
+
+# Build and release scripts
+bin/ @thomasvincent
+.github/workflows/ @thomasvincent
+
+# Documentation
+*.md @thomasvincent
