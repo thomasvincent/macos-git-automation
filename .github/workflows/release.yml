@@ -37,20 +37,19 @@ jobs:
           npm install
 
       - name: Configure PHPCS
-        run: composer config-phpcs || echo "PHPCS configuration failed, but continuing"
+        run: composer config-phpcs
 
       - name: Run tests
         run: |
-          npm test || echo "JavaScript tests failed, but continuing"
-          composer phpcs || echo "PHP CodeSniffer failed, but continuing"
-          composer test || echo "PHP tests failed, but continuing"
-        continue-on-error: true
+          npm test
+          composer phpcs
+          composer test
 
       - name: Build plugin
         run: |
           mkdir -p build/google-calendar-widget
-          cp -r *.php *.txt *.md languages examples build/google-calendar-widget/ || true
-          cp -r assets includes build/google-calendar-widget/ || true
+          cp -r *.php *.txt *.md languages examples build/google-calendar-widget/
+          cp -r assets includes build/google-calendar-widget/
           cd build
           zip -r google-calendar-widget.zip google-calendar-widget
 

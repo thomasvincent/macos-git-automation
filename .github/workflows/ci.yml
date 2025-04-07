@@ -65,7 +65,6 @@ jobs:
       run: composer config-phpcs
     - name: Run PHP CodeSniffer
       run: composer phpcs
-      continue-on-error: true
   
   js-tests:
     runs-on: ubuntu-latest
@@ -92,7 +91,6 @@ jobs:
       
     - name: Run JavaScript linting
       run: npm run lint
-      continue-on-error: true
       
   wordpress-coding-standards:
     runs-on: ubuntu-latest
@@ -121,4 +119,3 @@ jobs:
     - name: Run PHPCS WordPress Coding Standards
       run: |
         phpcs --standard=WordPress --extensions=php --report=summary .
-      continue-on-error: true
