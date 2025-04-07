@@ -1,131 +1,178 @@
 # Google Calendar Widget
 
-A WordPress plugin that displays Google Calendar events in a sidebar widget.
+[![CI Status](https://github.com/kazokuda/google-calendar-widget/workflows/CI/badge.svg)](https://github.com/kazokuda/google-calendar-widget/actions)
+[![WordPress Plugin Version](https://img.shields.io/wordpress/plugin/v/google-calendar-widget.svg)](https://wordpress.org/plugins/google-calendar-widget/)
+[![WordPress Plugin Rating](https://img.shields.io/wordpress/plugin/rating/google-calendar-widget.svg)](https://wordpress.org/plugins/google-calendar-widget/)
+[![WordPress Plugin Downloads](https://img.shields.io/wordpress/plugin/dt/google-calendar-widget.svg)](https://wordpress.org/plugins/google-calendar-widget/)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
-[![CI](https://github.com/yourusername/google-calendar-widget/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/google-calendar-widget/actions/workflows/ci.yml)
-[![Release](https://github.com/yourusername/google-calendar-widget/actions/workflows/release.yml/badge.svg)](https://github.com/yourusername/google-calendar-widget/actions/workflows/release.yml)
+> A WordPress plugin that displays upcoming events from one or more Google Calendars in a customizable widget.
 
-## Description
+## Table of Contents
 
-This plugin adds a sidebar widget containing an agenda from a Google Calendar. It displays upcoming events from one or more Google Calendars in a customizable format.
+- [Google Calendar Widget](#google-calendar-widget)
+  - [Table of Contents](#table-of-contents)
+  - [Background](#background)
+  - [Features](#features)
+  - [Install](#install)
+    - [WordPress Admin](#wordpress-admin)
+    - [Manual Installation](#manual-installation)
+  - [Usage](#usage)
+    - [Getting a Google API Key](#getting-a-google-api-key)
+    - [Widget Settings](#widget-settings)
+    - [Event Title Format](#event-title-format)
+  - [FAQ](#faq)
+    - [How do I find my Google Calendar ID?](#how-do-i-find-my-google-calendar-id)
+    - [How do I make my Google Calendar public?](#how-do-i-make-my-google-calendar-public)
+    - [Can I display events from multiple calendars?](#can-i-display-events-from-multiple-calendars)
+    - [Does this plugin work with private calendars?](#does-this-plugin-work-with-private-calendars)
+  - [Security](#security)
+  - [API](#api)
+  - [Maintainers](#maintainers)
+  - [Contributing](#contributing)
+    - [Development Setup](#development-setup)
+  - [License](#license)
 
-### Features
+## Background
 
-- Display events from multiple Google Calendars in a single widget
+Google Calendar Widget allows you to display upcoming events from Google Calendars on your WordPress site. The widget is highly customizable and can display events from multiple calendars, with options for formatting and display.
+
+## Features
+
+- Display upcoming events from one or more Google Calendars
 - Customize the number of events to display
 - Format event titles with customizable templates
-- Option to auto-expand event details
-- Supports all-day events and multi-day events
-- Internationalization support
+- Option to expand event details by default
+- Responsive design that works on all devices
+- Accessibility-ready with keyboard navigation and screen reader support
+- Internationalization support with translation-ready text
+- RTL language support
+- High contrast mode support
 
-## Installation
+## Install
 
-1. Upload all the files to the `/wp-content/plugins/google-calendar-widget` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Get a Google API Key from the [Developer Console](https://console.developers.google.com) and save it in the Google Calendar Widget Settings page.
-4. Drag the 'Google Calendar' widget to your sidebar
-5. Fill out the settings for each instance in your sidebar. You can get the calendar ID from your Google calendar settings.
+### WordPress Admin
+
+1. Go to Plugins > Add New in your WordPress admin
+2. Search for "Google Calendar Widget"
+3. Click "Install Now" and then "Activate"
+4. Go to Settings > Google Calendar Widget to configure your Google API key
+5. Add the Google Calendar Widget to your sidebar through the 'Widgets' menu
+
+### Manual Installation
+
+1. Download the plugin zip file from [the releases page](https://github.com/kazokuda/google-calendar-widget/releases)
+2. Upload the `google-calendar-widget` folder to the `/wp-content/plugins/` directory
+3. Activate the plugin through the 'Plugins' menu in WordPress
+4. Go to Settings > Google Calendar Widget to configure your Google API key
+5. Add the Google Calendar Widget to your sidebar through the 'Widgets' menu
+
+## Usage
 
 ### Getting a Google API Key
 
-1. Go to [https://console.developers.google.com](https://console.developers.google.com)
-2. Create or select a project for your web site
-3. In the left sidebar, select **APIs & Services** then select **Library**
-4. Search for "Calendar API" and select it
-5. Click **Enable** to enable the Calendar API
-6. In the left sidebar, select **Credentials**
-7. Click on **Create Credentials** and choose **API key**
-8. For security, restrict the API key to your domain under "Application restrictions"
-9. Under "API restrictions", restrict the key to the Google Calendar API
-10. Enter the key in the Google Calendar Widget Settings page
-
-### Finding Your Calendar ID
-
-1. Go to [Google Calendar](https://calendar.google.com/)
-2. Click on the three dots next to the calendar name in the left sidebar
-3. Select "Settings and sharing"
-4. Scroll down to the "Integrate calendar" section
-5. Copy the "Calendar ID" value (it will look like an email address)
-
-## Usage
+1. Go to the [Google Cloud Console](https://console.developers.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google Calendar API for your project
+4. Create an API key
+5. Restrict the API key to your domain for security
+6. Enter the API key in the plugin settings (Settings > Google Calendar Widget)
 
 ### Widget Settings
 
 - **Calendar Title**: The title displayed above the calendar events
-- **Maximum Results**: The maximum number of events to display
-- **Expand Entries by Default**: If checked, event details will be expanded by default
-- **Calendar ID 1**: The ID of the primary Google Calendar to display
-- **Calendar ID 2 (Optional)**: The ID of a secondary Google Calendar to display
-- **Calendar ID 3 (Optional)**: The ID of a tertiary Google Calendar to display
-- **Event Title Format**: Format string for event titles
+- **Maximum Results**: The maximum number of events to display (1-50)
+- **Expand Entries by Default**: Whether to show event details by default
+- **Calendar IDs**: The ID(s) of the Google Calendar(s) to display events from
+  - You can find the Calendar ID in your Google Calendar settings
+  - You can add multiple Calendar IDs by separating them with commas
+- **Event Title Format**: Customize how event titles are displayed
 
 ### Event Title Format
 
-The "Event Title Format" option allows you to customize how event titles appear in the widget. You can use the following placeholders:
-
+Use the following placeholders in the Event Title Format field:
 - `[TITLE]`: The event title
 - `[STARTTIME]`: The start time (or "All Day" for all-day events)
-- `[ENDTIME]`: The end time (not shown for all-day events)
+- `[ENDTIME]`: The end time (blank for all-day events)
 
-Any characters included within the brackets will only be shown if the value exists. For example, `[ENDTIME - ]` will insert " - " after the end time, but only if there is an end time.
+You can also include additional text within the brackets, which will only appear if the value exists. For example, `[STARTTIME - ][TITLE]` will display the start time followed by a dash and a space, but only if there is a start time.
 
-Examples:
-- `[STARTTIME] - [TITLE]` becomes "6:00AM - Test Event" or "All Day - Test Event"
-- `[STARTTIME] - [ENDTIME - ][TITLE]` becomes "6:00AM - 9:00AM - Test Event" or "All Day - Test Event"
-- `[STARTTIME][ - ENDTIME] : [TITLE]` becomes "6:00AM - 9:00AM : Test Event" or "All Day : Test Event"
-- `[STARTTIME][ - ENDTIME]<br>[TITLE]` becomes "6:00AM - 9:00AM<br>Test Event" or "All Day<br>Test Event"
+## FAQ
 
-## Development
+### How do I find my Google Calendar ID?
 
-### Prerequisites
+1. Go to [Google Calendar](https://calendar.google.com/)
+2. Click on the three dots next to the calendar name in the left sidebar
+3. Select "Settings and sharing"
+4. Scroll down to "Integrate calendar"
+5. The Calendar ID is listed there (e.g., `example@group.calendar.google.com`)
 
-- [Node.js](https://nodejs.org/) (for JavaScript testing)
-- [Composer](https://getcomposer.org/) (for PHP testing)
-- [WordPress](https://wordpress.org/) development environment
-- [Git](https://git-scm.com/) (for version control)
+### How do I make my Google Calendar public?
 
-### Setup
+1. Go to [Google Calendar](https://calendar.google.com/)
+2. Click on the three dots next to the calendar name in the left sidebar
+3. Select "Settings and sharing"
+4. Under "Access permissions," check "Make available to public"
+5. Save your changes
 
-1. Clone the repository: `git clone https://github.com/yourusername/google-calendar-widget.git`
-2. Install JavaScript dependencies: `npm install`
-3. Install PHP dependencies: `composer install`
-4. Set up the WordPress test environment: `bin/install-wp-tests.sh wordpress_test root root localhost latest`
+### Can I display events from multiple calendars?
 
-### Testing
+Yes, you can display events from up to three different calendars. Enter each Calendar ID in the widget settings, or separate multiple IDs with commas in a single field.
 
-- Run JavaScript tests: `npm test`
-- Run PHP tests: `composer test`
-- Run PHP CodeSniffer: `composer phpcs`
+### Does this plugin work with private calendars?
 
-### GitHub Flow
+The plugin works with public calendars by default. To display events from private calendars, you would need to implement additional authentication methods, which are not currently supported in this version of the plugin.
 
-This project follows the [GitHub Flow](https://guides.github.com/introduction/flow/) branching strategy:
+## Security
 
-1. Create a branch from `main` for your feature or bugfix
-2. Develop your changes on your branch
-3. Create a pull request to merge your changes into `main`
-4. After review and approval, your changes will be merged
+This plugin follows WordPress security best practices:
 
-For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
+- All user inputs are properly sanitized and validated
+- All outputs are properly escaped
+- The plugin uses WordPress nonces for form submissions
+- API keys are stored securely in the WordPress options table
 
-### Release Process
+## API
 
-Releases are managed by the project maintainers. To create a new release:
+The plugin provides the following JavaScript API for developers:
 
-1. Run the release script: `bin/create-release.sh`
-2. Follow the prompts to update version numbers and create a release branch
-3. Create a pull request from the release branch to `main`
-4. After merging, tag the release and push the tag to GitHub
-5. The GitHub Actions workflow will automatically create a GitHub release and build the plugin
+```javascript
+// Initialize the calendar with custom settings
+google_calendar_widget.loadCalendar(
+    'YOUR_API_KEY',
+    'element-title-id',
+    'element-events-id',
+    10, // Maximum number of events
+    false, // Auto-expand events
+    'primary-calendar-id@example.com',
+    'secondary-calendar-id@example.com',
+    'tertiary-calendar-id@example.com',
+    '[STARTTIME - ][TITLE]' // Event title format
+);
+```
 
-For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
+See the [examples/standalone.html](examples/standalone.html) file for a complete example of using the plugin outside of WordPress.
+
+## Maintainers
+
+[@kazokuda](https://github.com/kazokuda)
+
+## Contributing
+
+Feel free to dive in! [Open an issue](https://github.com/kazokuda/google-calendar-widget/issues/new) or submit PRs.
+
+This project follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
+
+### Development Setup
+
+1. Clone the repository
+2. Run `composer install` to install PHP dependencies
+3. Run `npm install` to install JavaScript dependencies
+4. Run `npm test` to run the JavaScript tests
+5. Run `composer test` to run the PHP tests
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 ## License
 
-This plugin is licensed under the GPL v2 or later.
-
-## Credits
-
-- Original author: Kaz Okuda
-- Uses [DateJS](http://www.datejs.com/) for date formatting
-- Uses [Wiky.js](http://goessner.net/articles/wiky/) for wiki markup parsing
+[GPL-2.0](LICENSE) © Kaz Okuda

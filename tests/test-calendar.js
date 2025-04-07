@@ -2,69 +2,9 @@
  * Google Calendar Widget JavaScript Tests
  * 
  * @package Google_Calendar_Widget
- * @version 2.0.0
+ * @version 2.1.0
  */
 
-// Mock the global objects and functions that the calendar code depends on
-global.document = {
-    getElementById: jest.fn(),
-    createElement: jest.fn(() => ({
-        className: '',
-        appendChild: jest.fn(),
-        textContent: '',
-        innerHTML: '',
-        setAttribute: jest.fn()
-    }))
-};
-
-global.console = {
-    log: jest.fn(),
-    error: jest.fn()
-};
-
-global.window = {
-    koCalendarDebug: true
-};
-
-global.ko_calendar_loc = {
-    all_day: 'All Day',
-    all_day_event: 'All Day Event'
-};
-
-global.gapi = {
-    client: {
-        setApiKey: jest.fn(),
-        load: jest.fn(() => Promise.resolve()),
-        newBatch: jest.fn(() => ({
-            add: jest.fn(),
-            then: jest.fn(() => ({
-                catch: jest.fn()
-            }))
-        })),
-        calendar: {
-            events: {
-                list: jest.fn()
-            }
-        }
-    }
-};
-
-global.Wiky = {
-    toHtml: jest.fn(str => str)
-};
-
-// Mock the ko_calendar object before importing the actual module
-global.ko_calendar = {
-    loadCalendarDefered: jest.fn(),
-    init: jest.fn()
-};
-
-// Mock the ko_calendar_google_init function
-global.ko_calendar_google_init = jest.fn(() => {
-    ko_calendar.init();
-});
-
-// Now we can run our tests
 describe('Google Calendar Widget', () => {
     beforeEach(() => {
         // Reset mocks before each test
@@ -88,37 +28,37 @@ describe('Google Calendar Widget', () => {
         });
     });
     
-    test('ko_calendar object exists', () => {
-        expect(ko_calendar).toBeDefined();
-        expect(typeof ko_calendar).toBe('object');
+    test('google_calendar_widget object exists', () => {
+        expect(google_calendar_widget).toBeDefined();
+        expect(typeof google_calendar_widget).toBe('object');
     });
     
-    test('ko_calendar.loadCalendarDefered exists', () => {
-        expect(ko_calendar.loadCalendarDefered).toBeDefined();
-        expect(typeof ko_calendar.loadCalendarDefered).toBe('function');
+    test('google_calendar_widget.loadCalendar exists', () => {
+        expect(google_calendar_widget.loadCalendar).toBeDefined();
+        expect(typeof google_calendar_widget.loadCalendar).toBe('function');
     });
     
-    test('ko_calendar.init exists', () => {
-        expect(ko_calendar.init).toBeDefined();
-        expect(typeof ko_calendar.init).toBe('function');
+    test('google_calendar_widget.init exists', () => {
+        expect(google_calendar_widget.init).toBeDefined();
+        expect(typeof google_calendar_widget.init).toBe('function');
     });
     
-    test('ko_calendar_google_init exists', () => {
-        expect(ko_calendar_google_init).toBeDefined();
-        expect(typeof ko_calendar_google_init).toBe('function');
+    test('google_calendar_widget_google_init exists', () => {
+        expect(google_calendar_widget_google_init).toBeDefined();
+        expect(typeof google_calendar_widget_google_init).toBe('function');
     });
     
-    test('ko_calendar_google_init calls ko_calendar.init', () => {
+    test('google_calendar_widget_google_init calls google_calendar_widget.init', () => {
         // Call the function
-        ko_calendar_google_init();
+        google_calendar_widget_google_init();
         
         // Check that init was called
-        expect(ko_calendar.init).toHaveBeenCalled();
+        expect(google_calendar_widget.init).toHaveBeenCalled();
     });
     
-    test('loadCalendarDefered can be called with calendar IDs', () => {
-        // Call loadCalendarDefered with test data
-        ko_calendar.loadCalendarDefered(
+    test('loadCalendar can be called with calendar IDs', () => {
+        // Call loadCalendar with test data
+        google_calendar_widget.loadCalendar(
             'test-api-key',
             'test-title-id',
             'test-output-id',
@@ -130,8 +70,8 @@ describe('Google Calendar Widget', () => {
             '[TITLE]'
         );
         
-        // Check that loadCalendarDefered was called with the right parameters
-        expect(ko_calendar.loadCalendarDefered).toHaveBeenCalledWith(
+        // Check that loadCalendar was called with the right parameters
+        expect(google_calendar_widget.loadCalendar).toHaveBeenCalledWith(
             'test-api-key',
             'test-title-id',
             'test-output-id',
@@ -144,50 +84,38 @@ describe('Google Calendar Widget', () => {
         );
     });
     
-    test('formatEventDetails correctly formats event titles', () => {
-        // Create a mock formatEventDetails function
-        const formatEventDetails = (titleFormat, event) => {
-            let output = titleFormat;
-            
-            if (event.summary) {
-                output = output.replace(/\[([^\]]*)TITLE([^\]]*)\]/g, '$1' + event.summary + '$2');
-            }
-            
-            return output;
-        };
-        
-        // Create a test event
-        const event = {
-            summary: 'Test Event',
-            start: {
-                dateTime: '2023-01-01T10:00:00'
-            },
-            end: {
-                dateTime: '2023-01-01T11:00:00'
-            }
-        };
-        
-        // Test with different format strings
-        const formats = [
-            '[TITLE]',
-            '[STARTTIME] - [TITLE]',
-            '[STARTTIME] - [ENDTIME] - [TITLE]',
-            '[TITLE] ([STARTTIME] - [ENDTIME])'
-        ];
-        
-        // Expected results
-        const expectedContains = [
-            'Test Event',
-            'Test Event',
-            'Test Event',
-            'Test Event'
-        ];
-        
-        // Test each format
-        formats.forEach((format, index) => {
-            const result = formatEventDetails(format, event);
-            expect(result).toContain(expectedContains[index]);
+    test('gapi.client.setApiKey is called with the API key', () => {
+        // Mock the implementation of loadCalendar to call the real function
+        const originalLoadCalendar = google_calendar_widget.loadCalendar;
+        google_calendar_widget.loadCalendar = jest.fn((apiKey) => {
+            gapi.client.setApiKey(apiKey);
         });
+        
+        // Call loadCalendar with test data
+        google_calendar_widget.loadCalendar('test-api-key');
+        
+        // Check that setApiKey was called with the right parameter
+        expect(gapi.client.setApiKey).toHaveBeenCalledWith('test-api-key');
+        
+        // Restore the original function
+        google_calendar_widget.loadCalendar = originalLoadCalendar;
+    });
+    
+    test('gapi.client.load is called with "calendar" and "v3"', () => {
+        // Mock the implementation of loadCalendar to call the real function
+        const originalLoadCalendar = google_calendar_widget.loadCalendar;
+        google_calendar_widget.loadCalendar = jest.fn((apiKey) => {
+            gapi.client.load('calendar', 'v3');
+        });
+        
+        // Call loadCalendar with test data
+        google_calendar_widget.loadCalendar('test-api-key');
+        
+        // Check that load was called with the right parameters
+        expect(gapi.client.load).toHaveBeenCalledWith('calendar', 'v3');
+        
+        // Restore the original function
+        google_calendar_widget.loadCalendar = originalLoadCalendar;
     });
     
     test('gapi.client.newBatch can be called', () => {

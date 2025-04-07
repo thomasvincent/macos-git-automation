@@ -1,226 +1,120 @@
 === Google Calendar Widget ===
-Contributors: poco
-Donate link: http://notions.okuda.ca
-Tags: google, calendar, widget
-Requires at least: 2.8
-Tested up to: 4.0
-Stable tag: 1.4.6
+Contributors: kazokuda
+Tags: calendar, events, google, widget, google calendar
+Requires at least: 5.6
+Tested up to: 6.4
+Stable tag: 2.1.0
+Requires PHP: 7.2
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-This plugin installs a sidebar widget that can show the upcoming events from a Google Calendar feed.
+Display upcoming events from one or more Google Calendars in a customizable widget.
 
 == Description ==
 
-This plugin installs a widget for showing a Google Calendar agenda on the sidebar.
-Once installed it adds a sidebar widget called 'Google Calendar' that may be dragged into your sidebar.
-Each widget can be configured with a ID of the calendar feed, a title, and the number of agenda items to show.
+Google Calendar Widget allows you to display upcoming events from Google Calendars on your WordPress site. The widget is highly customizable and can display events from multiple calendars, with options for formatting and display.
 
-The calendar feed ID is the ID next to 'Calendar ID:' in the Google Calendar settings.
+= Features =
 
-Multiple widgets can be used on the same page and each one can reference a different feed.
+* Display upcoming events from one or more Google Calendars
+* Customize the number of events to display
+* Format event titles with customizable templates
+* Option to expand event details by default
+* Responsive design that works on all devices
+* Accessibility-ready with keyboard navigation and screen reader support
+* Internationalization support with translation-ready text
 
-See also [http://notions.okuda.ca/wordpress-plugins/google-calendar-widget/](http://notions.okuda.ca/wordpress-plugins/google-calendar-widget/)
+= Getting Started =
+
+1. After installing and activating the plugin, go to Settings > Google Calendar Widget to configure your Google API key
+2. Add the Google Calendar Widget to your sidebar through the 'Widgets' menu in WordPress
+3. Configure the widget settings with your Google Calendar ID and display preferences
+
+= Getting a Google API Key =
+
+1. Go to the [Google Cloud Console](https://console.developers.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google Calendar API for your project
+4. Create an API key
+5. Restrict the API key to your domain for security
+6. Enter the API key in the plugin settings (Settings > Google Calendar Widget)
 
 == Installation ==
 
-1. Upload all the files to the `/wp-content/plugins/google-calendar-widget` directory
-1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Get a Google API Key from the [Developer Console](https://console.developers.google.com) and save it in the Google Calendar Widget Settings page.
-1. Drag the 'Google Calendar' widget to your sidebar
-1. Fill out the settings for each instance in your sidebar.  You can ge the calendar ID from your Google calendar settings.
-
-
-For example:
-
-* Calendar Title : Google Developer Calendar 
-* Calendar ID 1: developer-calendar@google.com
-* Calendar ID 2: insert.your@id.here
-* Calendar ID 3: <blank>
-* Event Title Format: [STARTTIME -][TITLE]
-* Maximum Results: 6 
+1. Upload the `google-calendar-widget` folder to the `/wp-content/plugins/` directory
+2. Activate the plugin through the 'Plugins' menu in WordPress
+3. Go to Settings > Google Calendar Widget to configure your Google API key
+4. Add the Google Calendar Widget to your sidebar through the 'Widgets' menu in WordPress
 
 == Frequently Asked Questions ==
 
-= How do I get a Google API Key? =
+= How do I find my Google Calendar ID? =
 
-1. Go to <a 'href=https://console.developers.google.com'>https://console.developers.google.com</a>.
-1. Create or select a project for your web site
-1. In the left sidebar, expand <b>APIs & auth</b> then select <b>APIs</b>
-1. Change the status of the <b>Calendar API</b> to <b>ON</b>
-1. In the left sidebar, select <b>Credentials</b>
-1. Click on <b>Create new Key</b> and choose <b>Browser key</b>
-1. For testing purposes you can leave the referrers empty, but to prevent your key from being used on unauthorized sites, only allow referrals from domains you administer.
+1. Go to [Google Calendar](https://calendar.google.com/)
+2. Click on the three dots next to the calendar name in the left sidebar
+3. Select "Settings and sharing"
+4. Scroll down to "Integrate calendar"
+5. The Calendar ID is listed there (e.g., `example@group.calendar.google.com`)
 
+= How do I make my Google Calendar public? =
 
-= Where do I get the calendar id? =
+1. Go to [Google Calendar](https://calendar.google.com/)
+2. Click on the three dots next to the calendar name in the left sidebar
+3. Select "Settings and sharing"
+4. Under "Access permissions," check "Make available to public"
+5. Save your changes
 
-See the here for more information about how to find your calendar key (http://googleappstroubleshootinghelp.blogspot.ca/2012/09/how-to-find-calendar-id-of-google.html).
+= Can I display events from multiple calendars? =
 
-= How do I change the language of the dates =
+Yes, you can display events from up to three different calendars. Enter each Calendar ID in the widget settings, or separate multiple IDs with commas in a single field.
 
-You can [download localized versions of date.js from here](http://code.google.com/p/datejs/downloads/list).  Find the correct language version in the "build" folder of the zip file, and replace the date.js in the plugin folder.
+= How do I customize the event title format? =
 
-= How can I change the format of the dates and times =
+Use the following placeholders in the Event Title Format field:
+* `[TITLE]`: The event title
+* `[STARTTIME]`: The start time (or "All Day" for all-day events)
+* `[ENDTIME]`: The end time (blank for all-day events)
 
-The date and time is formatted using the date.js library.
-Look for code like the following two lines in ko-calendar.js and change the format argument to match the format you want.
+You can also include additional text within the brackets, which will only appear if the value exists. For example, `[STARTTIME - ][TITLE]` will display the start time followed by a dash and a space, but only if there is a start time.
 
-	startJSDate.toString("ddd, MMM d, yyyy h:mm tt")
-	dateString = startJSDate.toString('MMM dd');
+= Why do I need a Google API key? =
 
-The formatting represents how the information will look on the page "MMM" translates to the abbreviated name of the month.
- 
-Take a look at the documentation for how you can change that formatting string to match what you want.
-http://code.google.com/p/datejs/wiki/FormatSpecifiers
- 
-For example, you can change the following
+The plugin uses the Google Calendar API to fetch events from your calendars. Google requires an API key to authenticate requests to their API. This helps them manage usage and prevent abuse.
 
-	dateString = startJSDate.toString('MMM dd');
+= Is there a limit to how many events I can display? =
 
-to this
+You can display up to 50 events in the widget. However, for performance reasons, we recommend keeping the number lower (5-10) for most use cases.
 
-    dateString = startJSDate.toString('dd.MM.yyyy');
+= Does this plugin work with private calendars? =
 
-to change the agenda item "Jan 2" to "02.01.2009"
-
-= Why is HTML in my calendar entry getting mangled =
-
-The plugin uses the [wiky.js library](http://goessner.net/articles/wiky/) that generates HTML from a wiki-like markup language.
-It expects that the calendar item descriptions are marked up using that format.  This is done to simplify the formatting for users who are already familiar with wiki markup and make the calendar entries easier to read when not interpreted.
-
-If you wish to remove this transformation simply replace the following line in ko-calendar.js
-
-	bodyDiv.innerHTML = Wiky.toHtml(entry.description != null ? entry.description : "");
-
-With
-
-	bodyDiv.innerHTML = entry.description != null ? entry.description : "";
-
-= How do I insert this in a theme without a sidebar =
-
-NOTE: After the V3 API upgrade this may not work correctly.
-
-You can insert the widget into a template directly, without adding it to a sidebar, by inserting php code directly into your theme.
-
-	<?php
-	the_widget("WP_Widget_KO_Calendar",
-		array(
-			'title' => 'Calendar Title',
-			'url' => 'yourcalendar@gmail.com',
-		),
-		array('before_widget' => '<div class="calendarwidget">',
-			'after_widget' => '</div>',
-			'before_title' => '<div class="calendartitle">',
-			'after_title' => '</div>'
-	));
-	?>
-
-You can configure it with the same options available in the widget, as the second parameter to the_widget.
-
-* 'title' will appear at the top of the calendar.
-* 'url' is the id of your Google Calendar (see the Installation instructions for more details)
-* 'url2', and 'url3' allow you to specify multiple calendars to be shown in the one view.
-* 'maxresults' restricts the number of events to show.  The default is 5.
-* 'titleformat' is the format of the event titles.  The default is "STARTTIME - TITLE".
-* If 'autoexpand' is TRUE, the calendar will show the details of each event by default.  The default is FALSE.
-
-The third parameter lists the standard widget options.  See the wordpress Widget documentation for more details.
-They can each be blank (i.e. 'before_widget'=>'') or contain whatever formatting you desire to be inserted in the flow.
-
-= How do I customize the event titles? =
-
-The "Event Title Format" option for each calendar allows you to format how you wish the calendar events to appear in the event list.
-The default format is "[STARTTIME - ][TITLE]" so, for example, an event that starts at 6:00pm would called "Birthday Party" would appear as "6:00PM - Birthday Party".
-
-*	[TITLE] will be substituted with the event title.
-*	[STARTTIME] will become the start time (or "All Day" if it is an all day event).
-*	[ENDTIME] will become the end time (or blank if it is an all day event).
-
-Any extra characters included within the [] will be inserted if the value exists.
-That is, [ENDTIME - ] will insert " - " after the end time, if and only if there is an end time.
-
-If an event is an all-day event, then [STARTTIME] will be replaced with "All Day" and no [ENDTIME] will defined.
-
-All html tags are stripped except `<br>` and `<p>` tags.
-
-Examples
-
-*	`"[STARTTIME] - [TITLE]"`              becomes `"6:00AM - Test Event" or "All Day - Test Event"`
-*	`"[STARTTIME] - [ENDTIME - ][TITLE]"`  becomes `"6:00AM - 9:00AM - Test Event" or "All Day - Test Event"`
-*	`"[STARTTIME][ - ENDTIME] : [TITLE]"`  becomes `"6:00AM - 9:00AM : Test Event" or "All Day : Test Event"`
-*   `"[STARTTIME][ - ENDTIME]<br>[TITLE]"` becomes `"6:00AM - 9:00AM<br>Test Event" or "All Day<br>Test Event"`
-
-= Can I use this code outside of Wordpress in an HTML page? =
-
-Yes!
-
-I have included an example with the plugin in "examples/stand_alone.html" that shows an example using the plugin code.
-Each element is tagged so it should be flexible for styling; see the existing stylesheet for examples.
-You must replace the text 'YOUR API KEY HERE' with your Google API Key
+The plugin works with public calendars by default. To display events from private calendars, you would need to implement additional authentication methods, which are not currently supported in this version of the plugin.
 
 == Screenshots ==
 
-1. The widget showing the upcoming Google developer calendar events on the sidebar of the default Wordpress theme.
+1. The Google Calendar Widget displaying upcoming events
+2. Widget configuration options
+3. Plugin settings page for Google API key
 
 == Changelog ==
 
-= 1.4.6 = 
-* Added definition of ko_calendar_loc if it was not previously defined by the wordpress loc system to support stand alone pages.
+= 2.1.0 =
+* Complete refactoring of the plugin for better performance and maintainability
+* Added accessibility improvements for keyboard navigation and screen readers
+* Enhanced error handling and user feedback
+* Improved responsive design for mobile devices
+* Added support for high contrast mode
+* Added RTL language support
+* Updated documentation
 
-= 1.4.5 =
-* Made URL of apis.google.com protocol relative so it will work with secure sites
-* Added initial support for localization and an en_US localization database.  I will include user contributed localizations.
-* Added support for `<br>` and `<p>` tags inside of the title format to get more formatting options.  For example "`[STARTTIME][ - ENDTIME]<br/>[TITLE]`"
-
-= 1.4.4 =
-* Clearer error message if using an invalid API key.
-
-= 1.4.3 =
-* Replaced WP_PLUGIN_URL with plugins_url for better compatibility
-* Fixed typo in php which broke the Google Console URL in the settings screen
-* Added error handling to batch query (it returns success even when parts of the batch fail, so we have to now check for individual errors).
-* Entry will now expand with the time and location even if there is no description.
-* Removed some unused code.
-
-= 1.4.2 =
-* Use Google client API batching to query multiple calendars
-* Added support for comma delimited calendar ids.  You can now add multiple calendars in one entry by separating them with commas.
-* Maintained the 3 ID entries for compatibility, but the second and third fields will likely be deprecated in the future and replaced with a single comma delimited list.
-
-= 1.4.1 =
-* Fixed typo data->date
-* Corrected the timezone for the all-day events
-
-= 1.4.0 =
-* Upgraded to Google Calendar API v3
-* Replaced calendar "URL" with calendar "ID"
-* Added Setting for Google API Key.  Each site must use a unique key.
-
-= 1.3.2 =
-* Optimizations:
-* Removed the version number from the Google jsapi so as to allow for more cache hits with other users.
-* Removed the script includes from the admin interface.
-
-= 1.3.1 =
-* Fixed problem where spaces around the loading GIF caused it to not stop when the calendar loads.
-
-= 1.3 =
-* Remove duplicate events when showing multiple calendars that have been invited to the same event.  If you create an event in calendar A and invite calendar B as a guest, then load them as "url" and "url2", the event should only appear once.
-* Added "Event Title Format" option to specify a format string to customize event titles (with or without the time).
-* Added error checking for errors that can occur when used offline (for test servers).
-* Changed the layout of the widget settings to increase the size of the text boxes.
-
-= 1.2 =
-* Added "Expand Entries by Default" checkbox to widget settings to auto expand all the calendar entries.  If this is checked, the each calendar item will open as though they were clicked by default.
-
-= 1.1 =
-* Added ability to support multiple feeds (up to 3) from one widget.
-
-= 1.0 =
-* Initial release
+= 2.0.0 =
+* Initial release of the refactored plugin
 
 == Upgrade Notice ==
 
-= 1.4.0 =
-This is a required upgrade to the Google Calendar API V3.  Versions prior to this stopped working November 17, 2014.
-You must replace your Google Calendar URLs with just the calendar ID (for example "1234@google.com").
-You must also get a Google Api Key and save it in the new plugin settings page.
+= 2.1.0 =
+This update includes a complete refactoring of the plugin with improved performance, accessibility enhancements, and better error handling. After upgrading, please check your widget settings to ensure everything is configured correctly.
+
+== Credits ==
+
+* Original plugin by Kaz Okuda
+* Uses the [Google Calendar API](https://developers.google.com/calendar)

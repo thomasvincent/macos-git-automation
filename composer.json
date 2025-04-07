@@ -6,26 +6,29 @@
     "authors": [
         {
             "name": "Kaz Okuda",
+            "email": "kaz@okuda.ca",
             "homepage": "http://notions.okuda.ca"
         }
     ],
     "require": {
-        "php": ">=5.6"
+        "php": ">=7.2",
+        "composer/installers": "^1.0 || ^2.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.5 || ^9.0",
-        "yoast/phpunit-polyfills": "^1.0",
-        "squizlabs/php_codesniffer": "^3.6",
+        "squizlabs/php_codesniffer": "^3.7",
         "wp-coding-standards/wpcs": "^2.3",
-        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1"
+        "phpunit/phpunit": "^7.5 || ^8.5",
+        "yoast/phpunit-polyfills": "^1.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2"
     },
     "scripts": {
-        "test": "phpunit",
         "phpcs": "phpcs --standard=WordPress",
-        "phpcbf": "phpcbf --standard=WordPress"
+        "phpcbf": "phpcbf --standard=WordPress",
+        "test": "phpunit"
     },
     "config": {
         "allow-plugins": {
+            "composer/installers": true,
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
     }

@@ -180,9 +180,9 @@ class TestCalendarWidget extends WP_UnitTestCase {
         $this->assertStringContainsString('<div class="widget">', $output);
         $this->assertStringContainsString('<h2 class="widget-title">', $output);
         $this->assertStringContainsString('Test Calendar', $output);
-        $this->assertStringContainsString('ko-calendar-widget-events', $output);
-        $this->assertStringContainsString('ko-calendar-widget-loading', $output);
-        $this->assertStringContainsString('ko_calendar.loadCalendarDefered', $output);
+        $this->assertStringContainsString('google-calendar-widget-events', $output);
+        $this->assertStringContainsString('google-calendar-widget-loading', $output);
+        $this->assertStringContainsString('google_calendar_widget.loadCalendar', $output);
     }
 
     /**
@@ -198,6 +198,29 @@ class TestCalendarWidget extends WP_UnitTestCase {
         $this->assertTrue(wp_script_is('wiky-js', 'registered'));
         $this->assertTrue(wp_script_is('google-calendar-widget', 'registered'));
         $this->assertTrue(wp_script_is('google-api-client', 'registered'));
+    }
+
+    /**
+     * Test plugin constants are defined.
+     */
+    public function test_plugin_constants() {
+        $this->assertTrue(defined('GOOGLE_CALENDAR_WIDGET_VERSION'));
+        $this->assertTrue(defined('GOOGLE_CALENDAR_WIDGET_PATH'));
+        $this->assertTrue(defined('GOOGLE_CALENDAR_WIDGET_URL'));
+        $this->assertTrue(defined('GOOGLE_CALENDAR_WIDGET_BASENAME'));
+    }
+
+    /**
+     * Test plugin action links.
+     */
+    public function test_plugin_action_links() {
+        $links = array();
+        $new_links = $this->plugin->add_plugin_action_links($links);
+        
+        $this->assertIsArray($new_links);
+        $this->assertGreaterThan(0, count($new_links));
+        $this->assertStringContainsString('Settings', $new_links[0]);
+        $this->assertStringContainsString('options-general.php?page=google_calendar_widget_admin', $new_links[0]);
     }
 
     /**
