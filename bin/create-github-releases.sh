@@ -30,14 +30,30 @@ TAGS=$(git tag)
 
 # Create a release for each tag
 for TAG in $TAGS; do
-    echo "Creating release for tag $TAG..."
+    echo "Processing tag $TAG..."
     
     # Get the version from the tag (remove the 'v' prefix if present)
     VERSION=${TAG#v}
     
+    # Check if release already exists
+    if gh release view "$TAG" &> /dev/null; then
+        echo "Release for $TAG already exists. Skipping."
+        continue
+    fi
+    
+    echo "Creating release for tag $TAG..."
+    
     # Get the changes for this version from the version-changes file
     if [ -f "version-changes-$VERSION.txt" ]; then
         CHANGES=$(cat "version-changes-$VERSION.txt")
+    elif [ -f "CHANGELOG.md" ]; then
+        # Try to extract changes from CHANGELOG.md
+        CHANGELOG_SECTION=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d')
+        if [ -n "$CHANGELOG_SECTION" ]; then
+            CHANGES="$CHANGELOG_SECTION"
+        else
+            CHANGES="Release $VERSION"
+        fi
     else
         CHANGES="Release $VERSION"
     fi
@@ -46,8 +62,7 @@ for TAG in $TAGS; do
     gh release create "$TAG" \
         --title "Release $VERSION" \
         --notes "$CHANGES" \
-        --target "version/$VERSION" \
-        || echo "Failed to create release for $TAG. It may already exist."
+        || echo "Failed to create release for $TAG. Please check for errors."
     
     echo "Release for $TAG created successfully."
     echo ""

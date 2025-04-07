@@ -23,7 +23,7 @@ class TestCalendarWidget extends WP_UnitTestCase {
     /**
      * Set up test environment.
      */
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         
         // Create an instance of the plugin class
@@ -203,7 +203,7 @@ class TestCalendarWidget extends WP_UnitTestCase {
     /**
      * Tear down test environment.
      */
-    public function tearDown() {
+    public function tearDown(): void {
         // Clean up
         unset($this->plugin);
         unset($this->widget);

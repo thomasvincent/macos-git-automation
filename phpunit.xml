@@ -12,9 +12,9 @@
             <directory prefix="test-" suffix=".php">./tests/</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist>
+    <coverage>
+        <include>
             <file>ko-calendar.php</file>
-        </whitelist>
-    </filter>
+        </include>
+    </coverage>
 </phpunit>
