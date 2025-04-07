@@ -25,8 +25,8 @@
         "phpcsstandards/phpcsextra": "^1.1"
     },
     "scripts": {
-        "phpcs": "phpcs --standard=WordPress --extensions=php",
-        "phpcbf": "phpcbf --standard=WordPress --extensions=php",
+        "phpcs": "phpcs --standard=WordPress --extensions=php .",
+        "phpcbf": "phpcbf --standard=WordPress --extensions=php .",
         "test": "phpunit",
         "config-phpcs": "phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcompatibility/php-compatibility,vendor/phpcompatibility/phpcompatibility-paragonie,vendor/phpcompatibility/phpcompatibility-wp,vendor/phpcsstandards/phpcsutils,vendor/phpcsstandards/phpcsextra"
     },

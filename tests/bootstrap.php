@@ -27,6 +27,9 @@ function _manually_load_plugin() {
 // Register the plugin with WordPress
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
+// Define a constant to skip database connection
+define( 'WP_TESTS_SKIP_DB', true );
+
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
 
