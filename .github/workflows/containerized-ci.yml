@@ -28,11 +28,24 @@ jobs:
         # Make entrypoint script executable
         chmod +x docker-entrypoint.sh
         
+        # Create logs and test-results directories
+        mkdir -p logs test-results
+        
         # Build and run the tests with Docker Compose
-        docker-compose build
-        WP_VERSION=${{ matrix.wp-version }} docker-compose up --abort-on-container-exit
+        docker compose build
+        WP_VERSION=${{ matrix.wp-version }} docker compose up --abort-on-container-exit
       env:
         WP_VERSION: ${{ matrix.wp-version }}
+
+    # Create placeholder log files if they don't exist
+    - name: Ensure log files exist
+      if: always()
+      run: |
+        mkdir -p logs test-results
+        touch logs/placeholder.log
+        touch test-results/placeholder.txt
+        echo "Test run for WordPress ${{ matrix.wp-version }}" > logs/placeholder.log
+        echo "Test results for WordPress ${{ matrix.wp-version }}" > test-results/placeholder.txt
 
     - name: Upload test logs
       if: always()

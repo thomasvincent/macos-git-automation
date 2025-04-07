@@ -62,12 +62,16 @@ jobs:
           echo "PHPCS checks temporarily disabled" > phpcs-reports/phpcs-report.txt
           echo "PHPCS VIP checks temporarily disabled" > phpcs-reports/phpcs-vip-report.txt
           echo "PHPCS compatibility checks temporarily disabled" > phpcs-reports/phpcs-compat-report.txt
+          ls -la phpcs-reports/
 
       - name: Upload PHPCS results
         uses: actions/upload-artifact@v4
         with:
           name: phpcs-reports
-          path: phpcs-reports/
+          path: |
+            phpcs-reports/phpcs-report.txt
+            phpcs-reports/phpcs-vip-report.txt
+            phpcs-reports/phpcs-compat-report.txt
 
   wp-plugin-scan:
     name: WordPress Plugin Security Scan
