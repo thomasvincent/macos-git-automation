@@ -61,9 +61,3 @@ yarn.lock
 wp-tests-config.php
 wordpress-tests-lib/
 wordpress/
-
-# Docker
-.docker/
-docker-compose.override.yml
-Dockerfile.security
-Dockerfile.release

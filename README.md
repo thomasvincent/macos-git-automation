@@ -31,8 +31,6 @@
   - [Maintainers](#maintainers)
   - [Contributing](#contributing)
     - [Development Setup](#development-setup)
-      - [Standard Setup](#standard-setup)
-      - [Docker Setup (Recommended)](#docker-setup-recommended)
   - [License](#license)
 
 ## Background
@@ -167,31 +165,13 @@ This project follows the [Contributor Covenant](http://contributor-covenant.org/
 
 ### Development Setup
 
-#### Standard Setup
-
 1. Clone the repository
 2. Run `composer install` to install PHP dependencies
 3. Run `npm install` to install JavaScript dependencies
 4. Run `npm test` to run the JavaScript tests
 5. Run `composer test` to run the PHP tests
 
-#### Docker Setup (Recommended)
-
-We provide a Docker setup for development and testing:
-
-1. Clone the repository
-2. Run `docker-compose up` to build the image and run all tests
-3. For development, you can run specific commands:
-   ```bash
-   docker-compose run wordpress-plugin composer install
-   docker-compose run wordpress-plugin npm install
-   docker-compose run wordpress-plugin composer test
-   docker-compose run wordpress-plugin npm test
-   ```
-
-See [DOCKER.md](DOCKER.md) for more details on the Docker setup.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details on contributing.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 ## License
 
