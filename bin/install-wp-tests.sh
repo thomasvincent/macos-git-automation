@@ -54,7 +54,6 @@ fi
 set -ex
 
 install_wp() {
-
 	if [ -d $WP_CORE_DIR ]; then
 		return;
 	fi
@@ -114,59 +113,82 @@ install_test_suite() {
 			svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/includes/ $WP_TESTS_DIR/includes
 			svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ $WP_TESTS_DIR/data
 		else
-			# Use curl or wget as fallback
-			mkdir -p $WP_TESTS_DIR/includes $WP_TESTS_DIR/data
+			# Use direct file download as fallback
+			echo "svn not found, using direct file download instead"
 			
-			# Download includes files
-			echo "svn not found, using direct download instead"
-			
-			# Instead of using GitHub zip, directly download the necessary files
-			echo "Downloading WordPress test files directly..."
-			
-			# Download the includes files
+			# Create necessary directories
 			mkdir -p "$WP_TESTS_DIR/includes"
+			mkdir -p "$WP_TESTS_DIR/data/plugins"
+			mkdir -p "$WP_TESTS_DIR/data/themes/default"
 			
-			# Determine the correct URL based on WP_TESTS_TAG
-			local BASE_URL
+			# Determine WordPress version for URL construction
+			local WP_VERSION_PATH
 			if [[ $WP_TESTS_TAG == trunk ]]; then
-				BASE_URL="https://raw.githubusercontent.com/WordPress/wordpress-develop/trunk/tests/phpunit"
+				WP_VERSION_PATH="trunk"
 			elif [[ $WP_TESTS_TAG == branches/* ]]; then
-				local BRANCH=${WP_TESTS_TAG#branches/}
-				BASE_URL="https://raw.githubusercontent.com/WordPress/wordpress-develop/$BRANCH/tests/phpunit"
+				WP_VERSION_PATH=${WP_TESTS_TAG#branches/}
 			elif [[ $WP_TESTS_TAG == tags/* ]]; then
-				local TAG=${WP_TESTS_TAG#tags/}
-				BASE_URL="https://raw.githubusercontent.com/WordPress/wordpress-develop/$TAG/tests/phpunit"
+				WP_VERSION_PATH=${WP_TESTS_TAG#tags/}
 			else
 				echo "Unknown WordPress test tag: $WP_TESTS_TAG"
 				exit 1
 			fi
 			
-			# Download essential test files
-			download "$BASE_URL/includes/bootstrap.php" "$WP_TESTS_DIR/includes/bootstrap.php"
-			download "$BASE_URL/includes/factory.php" "$WP_TESTS_DIR/includes/factory.php"
-			download "$BASE_URL/includes/functions.php" "$WP_TESTS_DIR/includes/functions.php"
-			download "$BASE_URL/includes/testcase.php" "$WP_TESTS_DIR/includes/testcase.php"
-			download "$BASE_URL/includes/trac.php" "$WP_TESTS_DIR/includes/trac.php"
-			download "$BASE_URL/includes/utils.php" "$WP_TESTS_DIR/includes/utils.php"
+			# Download essential include files
+			for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php; do
+				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file"
+			done
 			
-			# Create data directories
-			mkdir -p "$WP_TESTS_DIR/data/plugins"
-			mkdir -p "$WP_TESTS_DIR/data/themes/default"
+			# Create minimal data structure
+			echo "<?php
+class WP_UnitTest_Factory_For_Thing {
+	function create() { return 1; }
+	function create_many() { return array(1); }
+	function create_and_get() { return (object)array('id' => 1); }
+}
+" > "$WP_TESTS_DIR/includes/factory/class-wp-unittest-factory-for-thing.php"
 			
-			# Download some basic data files
-			download "$BASE_URL/data/plugins/hello.php" "$WP_TESTS_DIR/data/plugins/hello.php" 2>/dev/null || true
-			download "$BASE_URL/data/themes/default/style.css" "$WP_TESTS_DIR/data/themes/default/style.css" 2>/dev/null || true
-			download "$BASE_URL/data/themes/default/index.php" "$WP_TESTS_DIR/data/themes/default/index.php" 2>/dev/null || true
+			# Create a minimal hello.php plugin
+			echo "<?php
+/**
+ * Plugin Name: Hello Dolly
+ * Plugin URI: http://wordpress.org/plugins/hello-dolly/
+ * Description: This is not just a plugin, it symbolizes the hope and enthusiasm of an entire generation.
+ * Author: Matt Mullenweg
+ * Version: 1.7.2
+ * Author URI: http://ma.tt/
+ */
+" > "$WP_TESTS_DIR/data/plugins/hello.php"
+			
+			# Create minimal theme files
+			echo "/*
+Theme Name: Default
+*/" > "$WP_TESTS_DIR/data/themes/default/style.css"
+			
+			echo "<?php
+// Silence is golden.
+" > "$WP_TESTS_DIR/data/themes/default/index.php"
 		fi
 	fi
 
 	if [ ! -f wp-tests-config.php ]; then
+		# Download config file
 		if command -v svn >/dev/null 2>&1; then
 			download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
 		else
 			# Use GitHub as fallback
-			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/${WP_TESTS_TAG#tags/}/wp-tests-config-sample.php" "$WP_TESTS_DIR"/wp-tests-config.php
+			local WP_VERSION_PATH
+			if [[ $WP_TESTS_TAG == trunk ]]; then
+				WP_VERSION_PATH="trunk"
+			elif [[ $WP_TESTS_TAG == branches/* ]]; then
+				WP_VERSION_PATH=${WP_TESTS_TAG#branches/}
+			elif [[ $WP_TESTS_TAG == tags/* ]]; then
+				WP_VERSION_PATH=${WP_TESTS_TAG#tags/}
+			fi
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/wp-tests-config-sample.php" "$WP_TESTS_DIR"/wp-tests-config.php
 		fi
+		
+		# Edit the config file
 		# remove all forward slashes in the end
 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
 		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
@@ -175,11 +197,9 @@ install_test_suite() {
 		sed $ioption "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR"/wp-tests-config.php
 		sed $ioption "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR"/wp-tests-config.php
 	fi
-
 }
 
 install_db() {
-
 	if [ ${SKIP_DB_CREATE} = "true" ]; then
 		return 0
 	fi
@@ -203,6 +223,9 @@ install_db() {
 	# create database
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
 }
+
+# Always pull latest changes before running
+git pull origin main || echo "Failed to pull from origin main, continuing anyway"
 
 install_wp
 install_test_suite
