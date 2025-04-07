@@ -125,49 +125,51 @@ install_test_suite() {
 		mkdir -p "$WP_TESTS_DIR/data/plugins"
 		mkdir -p "$WP_TESTS_DIR/data/themes/default"
 
-		# Download all WordPress test files
+		# Download WordPress test files using a more efficient approach
 		echo "Downloading WordPress test files from GitHub..."
 
-		# Download all files from the includes directory
-		echo "Downloading all files from the includes directory..."
-		mkdir -p "$WP_TESTS_DIR/includes"
-		
-		# Use curl to get a directory listing of the includes directory
-		if [ `which curl` ]; then
-			FILES=$(curl -s "https://api.github.com/repos/WordPress/wordpress-develop/contents/tests/phpunit/includes?ref=$WP_VERSION_PATH" | grep "\"name\":" | cut -d'"' -f4)
-			for file in $FILES; do
-				if [[ "$file" != *"/"* ]]; then
-					download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file" || echo "Warning: Could not download $file"
-				fi
-			done
-		else
-			# Fallback to a list of known files if curl is not available
-			for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php mock-mailer.php install.php unregister-blocks-hooks.php abstract-testcase.php phpunit-adapter-testcase.php class-basic-object.php class-wp-rest-server.php class-wp-fake-request.php class-wp-test-stream.php class-wp-test-rest-controller.php class-wp-test-spy-rest-server.php; do
-				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file" || echo "Warning: Could not download $file"
-			done
-		fi
-
-		# Download all PHPUnit compatibility files
+		# Create necessary directories
 		mkdir -p "$WP_TESTS_DIR/includes/phpunit6"
 		mkdir -p "$WP_TESTS_DIR/includes/phpunit7"
-		
-		# Use curl to get a directory listing of the phpunit6 directory
+		mkdir -p "$WP_TESTS_DIR/includes/factory"
+		mkdir -p "$WP_TESTS_DIR/includes/rest-api"
+
+		# Download the entire test suite as a zip file
 		if [ `which curl` ]; then
-			FILES=$(curl -s "https://api.github.com/repos/WordPress/wordpress-develop/contents/tests/phpunit/includes/phpunit6?ref=$WP_VERSION_PATH" | grep "\"name\":" | cut -d'"' -f4)
-			for file in $FILES; do
-				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit6/$file" "$WP_TESTS_DIR/includes/phpunit6/$file" || echo "Warning: Could not download phpunit6/$file"
+			echo "Downloading WordPress test suite..."
+			curl -s -L "https://github.com/WordPress/wordpress-develop/archive/$WP_VERSION_PATH.zip" -o "$TMPDIR/wp-tests.zip"
+			
+			if [ -f "$TMPDIR/wp-tests.zip" ]; then
+				echo "Extracting test files..."
+				unzip -q "$TMPDIR/wp-tests.zip" "wordpress-develop-$WP_VERSION_PATH/tests/phpunit/includes/*" -d "$TMPDIR"
+				
+				# Copy all the test files to the test directory
+				cp -r "$TMPDIR/wordpress-develop-$WP_VERSION_PATH/tests/phpunit/includes/"* "$WP_TESTS_DIR/includes/"
+				
+				# Clean up
+				rm -rf "$TMPDIR/wordpress-develop-$WP_VERSION_PATH"
+				rm -f "$TMPDIR/wp-tests.zip"
+			else
+				echo "Failed to download WordPress test suite zip file. Falling back to individual file download."
+				# Fallback to downloading essential files individually
+				for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php mock-mailer.php install.php unregister-blocks-hooks.php abstract-testcase.php phpunit-adapter-testcase.php; do
+					download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file" || echo "Warning: Could not download $file"
+				done
+				
+				# PHPUnit compatibility files
+				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit6/compat.php" "$WP_TESTS_DIR/includes/phpunit6/compat.php" || echo "Warning: Could not download phpunit6/compat.php"
+				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit7/compat.php" "$WP_TESTS_DIR/includes/phpunit7/compat.php" || echo "Warning: Could not download phpunit7/compat.php"
+			fi
+		else
+			# Fallback for systems without curl
+			echo "curl not found. Falling back to individual file download."
+			for file in bootstrap.php factory.php functions.php testcase.php trac.php utils.php mock-mailer.php install.php unregister-blocks-hooks.php abstract-testcase.php phpunit-adapter-testcase.php; do
+				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/$file" "$WP_TESTS_DIR/includes/$file" || echo "Warning: Could not download $file"
 			done
 			
-			FILES=$(curl -s "https://api.github.com/repos/WordPress/wordpress-develop/contents/tests/phpunit/includes/phpunit7?ref=$WP_VERSION_PATH" | grep "\"name\":" | cut -d'"' -f4)
-			for file in $FILES; do
-				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit7/$file" "$WP_TESTS_DIR/includes/phpunit7/$file" || echo "Warning: Could not download phpunit7/$file"
-			done
-		else
-			# Fallback to a list of known files if curl is not available
-			for file in compat.php; do
-				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit6/$file" "$WP_TESTS_DIR/includes/phpunit6/$file" || echo "Warning: Could not download phpunit6/$file"
-				download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit7/$file" "$WP_TESTS_DIR/includes/phpunit7/$file" || echo "Warning: Could not download phpunit7/$file"
-			done
+			# PHPUnit compatibility files
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit6/compat.php" "$WP_TESTS_DIR/includes/phpunit6/compat.php" || echo "Warning: Could not download phpunit6/compat.php"
+			download "https://raw.githubusercontent.com/WordPress/wordpress-develop/$WP_VERSION_PATH/tests/phpunit/includes/phpunit7/compat.php" "$WP_TESTS_DIR/includes/phpunit7/compat.php" || echo "Warning: Could not download phpunit7/compat.php"
 		fi
 
 		# Factory classes
