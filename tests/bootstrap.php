@@ -24,5 +24,17 @@ function _manually_load_plugin() {
 	require dirname( __DIR__ ) . '/google-calendar-widget.php';
 }
 
+// Register the plugin with WordPress
+tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
+
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
+
+// Make sure the plugin is loaded
+if ( ! class_exists( 'Google_Calendar_Widget' ) ) {
+	require dirname( __DIR__ ) . '/includes/class-google-calendar-widget.php';
+}
+
+if ( ! class_exists( 'Google_Calendar_Widget_Display' ) ) {
+	require dirname( __DIR__ ) . '/includes/class-google-calendar-widget-display.php';
+}
