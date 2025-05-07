@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    # Allow manual triggering
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Check code style
+      run: npm run format:check
+    
+    - name: Lint
+      run: npm run lint
+  
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.x
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build package
+      run: npm run build
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist
+  
+  # AppleScript validation - limited on GitHub Actions
+  validate-scripts:
+    runs-on: macos-13
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check file existence
+      run: |
+        if [ -f src/applescript/GitCloneFromClipboard.applescript ]; then
+          echo "✅ AppleScript file found"
+        else
+          echo "❌ AppleScript file not found"
+          exit 1
+        fi
+        
+        if [ -f src/javascript/GitCloneFromClipboard.js ]; then
+          echo "✅ JavaScript file found"
+        else
+          echo "❌ JavaScript file not found"
+          exit 1
+        fi
+        
+        if [ -f src/bash/git-clone-from-clipboard.sh ]; then
+          echo "✅ Bash script found"
+        else
+          echo "❌ Bash script not found"
+          exit 1
+        fi
+    
+    - name: Check bash script syntax
+      run: bash -n src/bash/git-clone-from-clipboard.sh

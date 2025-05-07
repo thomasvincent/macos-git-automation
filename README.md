@@ -1,60 +1,212 @@
+# macOS Git Automation
 
-# Git Clone Automator Scripts for Mac
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform: macOS](https://img.shields.io/badge/Platform-macOS-lightgrey.svg)](https://developer.apple.com/macos/)
+[![Node Version](https://img.shields.io/badge/Node.js-%E2%89%A516.0.0-green.svg)](https://nodejs.org/)
+[![GitHub CLI](https://img.shields.io/badge/GitHub%20CLI-Required-orange.svg)](https://cli.github.com/)
 
-This repository contains three scripts that allow you to easily clone a Git repository from a URL in your clipboard to a directory in your Documents folder on a Mac using Automator or the command line.
+> A suite of tools for automating Git operations on macOS through AppleScript, JavaScript for Automation (JXA), and Bash. Clone repositories from clipboard URLs with a single command or click.
 
-## Scripts
+## Table of Contents
 
-1. `CloneGitRepo.sh`: Bash script version
-2. `GitCloneFromClipboard.scpt`: AppleScript version
-3. `CloneGitRepoJXA.js`: JavaScript for Automation (JXA) version
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Implementation Details](#implementation-details)
+- [Development](#development)
+- [Testing](#testing)
+- [License](#license)
+- [Contributing](#contributing)
 
 ## Features
 
-- Validates the Git URL in the clipboard
-- Extracts the repository name from the URL
-- Clones the repository to a directory named after the repo in the Documents folder
-- Opens the cloned repository directory in Finder (optional for the Bash version)
-- Provides error alerts or messages for invalid URLs or cloning failures
+- **Clone repositories from clipboard** - Copy a Git URL, run the script, and the repository is cloned
+- **Smart directory creation** - Repository name is automatically extracted from the URL
+- **Multiple implementation options:**
+  - AppleScript for integration with macOS automation
+  - JavaScript for Automation (JXA) for modern scripting
+  - Bash script for command-line usage
+- **Comprehensive error handling** - Validation of URLs and proper error reporting
+- **macOS integration** - Uses native notifications and Finder integration
+- **Secure implementation** - Input validation and safe command execution
 
 ## Prerequisites
 
-1. Install the GitHub CLI (`gh`) command-line tool and authenticate it.
-2. Ensure you have a valid Git repository URL in your clipboard.
-3. For the Bash version, ensure you have the `pbpaste` command (built-in in macOS) and optionally `terminal-notifier` (installable via Homebrew) for notifications.
+- macOS 10.15 Catalina or later (recommended)
+- [GitHub CLI](https://cli.github.com/) (`gh`) installed and authenticated
+- For development: Node.js 16.0.0 or later
+
+## Installation
+
+### Option 1: Clone the Repository
+
+```bash
+# Clone the repository
+git clone https://github.com/thomasvincent/macos-git-automation.git
+
+# Navigate to the directory
+cd macos-git-automation
+
+# Build the scripts
+npm run build
+
+# Make scripts executable (if needed)
+chmod +x dist/*.sh
+```
+
+### Option 2: Download Individual Scripts
+
+Download the specific implementation you need:
+
+- [AppleScript Version](dist/GitCloneFromClipboard.applescript)
+- [JavaScript Version](dist/GitCloneFromClipboard.js)
+- [Bash Version](dist/git-clone-from-clipboard.sh)
 
 ## Usage
 
-### Bash Script
-1. Copy the Git repository URL to your clipboard.
-2. Run the `CloneGitRepo.sh` script from the command line:
-`./CloneGitRepo.sh`
+### AppleScript Version
 
-### AppleScript
+1. Copy a Git repository URL to your clipboard (e.g., `https://github.com/username/repo.git`)
+2. Run the AppleScript:
+   - From Script Editor: Open `src/applescript/GitCloneFromClipboard.applescript` and click Run
+   - From Terminal: `osascript src/applescript/GitCloneFromClipboard.applescript`
+   - Or create an application from the script for easy access
 
-1. Open the `GitCloneFromClipboard.scpt` file in Script Editor.
-2. Copy the Git repository URL to your clipboard.
-3. Run the script from Script Editor or save it as an application and run it.
+### JavaScript (JXA) Version
 
-### JavaScript for Automation (JXA)
+1. Copy a Git repository URL to your clipboard
+2. Run the JavaScript:
+   - From Terminal: `osascript -l JavaScript src/javascript/GitCloneFromClipboard.js`
+   - From Automator: Create a new "Run JavaScript" action and paste the script
 
-1. Open Automator and create a new Application workflow.
-2. Add a "Run JavaScript" action to the workflow.
-3. Copy and paste the contents of the `CloneGitRepoJXA.js` file into the script area.
-4. Save the Automator application with a descriptive name, such as "Clone Git Repository".
-5. Copy the Git repository URL to your clipboard.
-6. Run the saved Automator application.
+### Bash Version
 
-### Troubleshooting
+1. Copy a Git repository URL to your clipboard
+2. Run the Bash script:
+   ```bash
+   ./src/bash/git-clone-from-clipboard.sh [optional_target_directory]
+   ```
+   If no target directory is specified, the repository will be cloned to `~/Documents/[repo-name]`
 
-- If you encounter an "Invalid Git URL" error, ensure that the URL in your clipboard is a valid Git repository URL starting with "http" or "https".
-- If the cloning process fails, check that you have the GitHub CLI (`gh`) installed and properly authenticated.
-- For the Bash version, make sure you have the required commands (`pbpaste`, `gh`, and optionally `terminal-notifier`) installed.
+## Implementation Details
 
-### License
+<details>
+<summary><strong>AppleScript Implementation</strong></summary>
 
-These scripts are released under the MIT License. See the [LICENSE](LICENSE) file for more information.
+The AppleScript version uses AppleScript's native clipboard access and shell script execution to:
 
-### Author
+1. Get and validate the Git URL from clipboard
+2. Extract the repository name
+3. Clone using GitHub CLI
+4. Open the result in Finder
 
-Thomas Vincent
+```applescript
+set gitURL to the clipboard as text
+set repoName to do shell script "basename " & quoted form of gitURL & " .git | tr -dc '[:alnum:]_-'"
+set cloneDir to (path to documents folder as text) & repoName
+do shell script "gh repo clone " & quoted form of gitURL & space & quoted form of cloneDir
+tell application "Finder" to reveal cloneDir as POSIX file
+```
+</details>
+
+<details>
+<summary><strong>JavaScript (JXA) Implementation</strong></summary>
+
+The JavaScript for Automation version offers more robust error handling and modern syntax:
+
+```javascript
+const gitURL = Application.currentApplication().clipboard();
+const repoName = extractRepoName(gitURL);
+const cloneDir = `${app.pathTo('documents').toString()}/${repoName}`;
+app.doShellScript(`gh repo clone ${app.quoted(gitURL)} ${app.quoted(cloneDir)}`);
+const finder = Application('Finder');
+finder.reveal(Path(cloneDir));
+```
+</details>
+
+<details>
+<summary><strong>Bash Implementation</strong></summary>
+
+The Bash script version provides comprehensive logging, dependency checking, and more configuration options:
+
+```bash
+# Get URL from clipboard
+git_url=$(pbpaste)
+
+# Extract repo name
+repo_name=$(basename "$git_url" .git | tr -dc '[:alnum:]_-')
+
+# Determine target directory
+target_dir="${DEFAULT_CLONE_DIR}/${repo_name}"
+
+# Clone repository
+gh repo clone "$git_url" "$target_dir"
+
+# Show notification and open in Finder
+osascript -e "display notification \"Repository cloned\" with title \"Git Clone Complete\""
+open "$target_dir"
+```
+</details>
+
+## Development
+
+This project is structured for clean organization of multiple implementations:
+
+```
+macos-git-automation/
+├── src/
+│   ├── applescript/        # AppleScript implementation
+│   ├── javascript/         # JavaScript (JXA) implementation
+│   └── bash/               # Bash script implementation
+├── tests/                  # Test scripts
+├── original/               # Original script versions
+├── package.json            # Node.js configuration
+└── README.md               # Documentation
+```
+
+### Development Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/thomasvincent/macos-git-automation.git
+   cd macos-git-automation
+   ```
+
+2. Install development dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run tests:
+   ```bash
+   npm test
+   ```
+
+## Testing
+
+Tests for each implementation are available in the `tests/` directory:
+
+```bash
+# Test all implementations
+npm test
+
+# Test specific implementation
+npm run test:applescript
+npm run test:javascript
+npm run test:bash
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request

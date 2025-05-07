@@ -1,0 +1,43 @@
+{
+  "name": "macos-git-automation",
+  "version": "2.0.0",
+  "description": "Automate Git operations on macOS via AppleScript, JavaScript, and Bash",
+  "main": "src/javascript/GitCloneFromClipboard.js",
+  "scripts": {
+    "test:applescript": "cd tests && ./test-applescript.sh",
+    "test:javascript": "cd tests && ./test-javascript.sh",
+    "test:bash": "cd tests && ./test-bash.sh",
+    "test": "echo 'Running tests for all implementations' && npm run test:bash && npm run test:applescript && npm run test:javascript",
+    "lint": "eslint src/javascript/*.js",
+    "build": "mkdir -p dist && cp src/javascript/*.js dist/ && cp src/applescript/*.applescript dist/ && cp src/bash/*.sh dist/ && chmod +x dist/*.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thomasvincent/macos-git-automation.git"
+  },
+  "keywords": [
+    "git",
+    "macos",
+    "automation",
+    "applescript",
+    "jxa",
+    "bash"
+  ],
+  "author": "Thomas Vincent",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thomasvincent/macos-git-automation/issues"
+  },
+  "homepage": "https://github.com/thomasvincent/macos-git-automation#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "os": [
+    "darwin"
+  ],
+  "devDependencies": {
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "prettier": "^3.0.0"
+  }
+}
