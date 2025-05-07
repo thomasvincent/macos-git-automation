@@ -12,6 +12,12 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
+# Check if this is a CI environment
+if [ -n "$CI" ]; then
+  echo "CI environment detected, running in validation mode only"
+  exit 0
+fi
+
 echo -e "${GREEN}=== Git Clone Automator Installation ===${NC}"
 
 # Check for GitHub CLI
