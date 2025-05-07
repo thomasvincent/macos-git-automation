@@ -1,60 +1,107 @@
+# Git Clone Automator Scripts for macOS
 
-# Git Clone Automator Scripts for Mac
-
-This repository contains three scripts that allow you to easily clone a Git repository from a URL in your clipboard to a directory in your Documents folder on a Mac using Automator or the command line.
+A collection of scripts to easily clone a Git repository from a URL in your clipboard to a directory on your Mac.
 
 ## Scripts
 
-1. `CloneGitRepo.sh`: Bash script version
-2. `GitCloneFromClipboard.scpt`: AppleScript version
-3. `CloneGitRepoJXA.js`: JavaScript for Automation (JXA) version
+1. `dist/git-clone-automator.sh`: Bash script version
+2. `dist/GitCloneFromClipboard.applescript`: AppleScript version
+3. `dist/CloneGitRepoJXA.js`: JavaScript for Automation (JXA) version
 
 ## Features
 
 - Validates the Git URL in the clipboard
 - Extracts the repository name from the URL
-- Clones the repository to a directory named after the repo in the Documents folder
-- Opens the cloned repository directory in Finder (optional for the Bash version)
-- Provides error alerts or messages for invalid URLs or cloning failures
+- Clones the repository to a directory in your Documents folder
+- Opens the cloned repository directory in Finder
+- Displays notifications for success or failure
+- Support for both HTTP(S) and SSH repository URLs
 
 ## Prerequisites
 
-1. Install the GitHub CLI (`gh`) command-line tool and authenticate it.
-2. Ensure you have a valid Git repository URL in your clipboard.
-3. For the Bash version, ensure you have the `pbpaste` command (built-in in macOS) and optionally `terminal-notifier` (installable via Homebrew) for notifications.
+- macOS 10.15 Catalina or later
+- [GitHub CLI](https://cli.github.com/) (`gh`) installed and authenticated
+
+## Installation
+
+### Quick Installation
+
+Run the installation script to install all scripts and create an application:
+
+```bash
+./install.sh
+```
+
+This will:
+1. Check for and install GitHub CLI if needed
+2. Create a directory at ~/Applications/GitAutomation
+3. Copy all scripts to this directory
+4. Create an AppleScript application for easy access
+
+### Manual Installation
 
 ## Usage
 
 ### Bash Script
-1. Copy the Git repository URL to your clipboard.
-2. Run the `CloneGitRepo.sh` script from the command line:
-`./CloneGitRepo.sh`
+
+1. Copy a Git repository URL to your clipboard
+2. Run the bash script:
+   ```bash
+   ./dist/git-clone-automator.sh [optional_target_directory]
+   ```
+   If no target directory is specified, repositories will be cloned to `~/Documents/`.
 
 ### AppleScript
 
-1. Open the `GitCloneFromClipboard.scpt` file in Script Editor.
-2. Copy the Git repository URL to your clipboard.
-3. Run the script from Script Editor or save it as an application and run it.
+1. Copy a Git repository URL to your clipboard
+2. Run the AppleScript:
+   - From Script Editor: Open `dist/GitCloneFromClipboard.applescript` and click Run
+   - From Terminal: `osascript dist/GitCloneFromClipboard.applescript`
+   - From Automator: Create a new Application workflow with a "Run AppleScript" action, paste the script content, and save
 
 ### JavaScript for Automation (JXA)
 
-1. Open Automator and create a new Application workflow.
-2. Add a "Run JavaScript" action to the workflow.
-3. Copy and paste the contents of the `CloneGitRepoJXA.js` file into the script area.
-4. Save the Automator application with a descriptive name, such as "Clone Git Repository".
-5. Copy the Git repository URL to your clipboard.
-6. Run the saved Automator application.
+1. Copy a Git repository URL to your clipboard
+2. Run the JavaScript:
+   - From Terminal: `osascript -l JavaScript dist/CloneGitRepoJXA.js`
+   - From Automator: Create a new Application workflow with a "Run JavaScript" action, paste the script content, and save
 
-### Troubleshooting
+## Automator Integration
 
-- If you encounter an "Invalid Git URL" error, ensure that the URL in your clipboard is a valid Git repository URL starting with "http" or "https".
-- If the cloning process fails, check that you have the GitHub CLI (`gh`) installed and properly authenticated.
-- For the Bash version, make sure you have the required commands (`pbpaste`, `gh`, and optionally `terminal-notifier`) installed.
+For quick access, you can create Automator workflows:
 
-### License
+1. Open Automator and create a new Application
+2. Choose either "Run AppleScript" or "Run JavaScript"
+3. Paste the content of the respective script
+4. Save the application and use it whenever you need to clone a repository
 
-These scripts are released under the MIT License. See the [LICENSE](LICENSE) file for more information.
+You can also assign keyboard shortcuts to your Automator applications using macOS System Settings > Keyboard > Keyboard Shortcuts > App Shortcuts.
 
-### Author
+## Error Handling
+
+- Each script validates that the clipboard contains a valid Git repository URL
+- Error alerts are displayed if the URL is invalid or if cloning fails
+- Successful clones are confirmed with a notification
+
+## Testing
+
+The scripts have been tested on macOS Ventura with various Git repository URLs.
+
+To run the automated tests:
+
+```bash
+./test.sh
+```
+
+This will validate:
+- Bash script syntax
+- Presence of all required files
+- Automator workflow structure
+
+## License
+
+This project is licensed under the MIT License.
+
+## Author
 
 Thomas Vincent
