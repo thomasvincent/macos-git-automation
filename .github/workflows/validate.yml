@@ -1,0 +1,24 @@
+name: Validate Scripts
+
+on:
+  push:
+    branches: [ main, feat/**, fix/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run test script
+      run: |
+        chmod +x ./test.sh
+        ./test.sh
+        
+    - name: Validate installation script
+      run: |
+        chmod +x ./install.sh
+        bash -n ./install.sh

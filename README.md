@@ -83,6 +83,21 @@ You can also assign keyboard shortcuts to your Automator applications using macO
 - Error alerts are displayed if the URL is invalid or if cloning fails
 - Successful clones are confirmed with a notification
 
+## Testing
+
+The scripts have been tested on macOS Ventura with various Git repository URLs.
+
+To run the automated tests:
+
+```bash
+./test.sh
+```
+
+This will validate:
+- Bash script syntax
+- Presence of all required files
+- Automator workflow structure
+
 ## License
 
 This project is licensed under the MIT License.
