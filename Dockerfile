@@ -48,13 +48,13 @@ WORKDIR /var/www/html
 COPY bin/ bin/
 RUN chmod +x bin/*.sh
 
-# Copy files
-COPY composer.json composer.lock ./
+# Copy composer.json 
+COPY composer.json ./
 RUN composer install --no-interaction --no-progress --no-autoloader
 
 # Copy package.json and install Node dependencies
-COPY package.json package-lock.json ./
-RUN npm ci || npm install --no-audit --legacy-peer-deps
+COPY package.json ./
+RUN npm install --no-audit --legacy-peer-deps
 
 # Copy the rest of the application
 COPY . .
