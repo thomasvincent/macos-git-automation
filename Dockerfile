@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     default-mysql-client \
-    nodejs \
-    npm \
+    curl \
+    gnupg \
     && docker-php-ext-install \
     mysqli \
     pdo_mysql \
@@ -25,24 +25,44 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd
 
+# Use official Node.js setup to install a supported version
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm
+
+# Verify Node.js and npm installation
+RUN node -v && npm -v
+
+# Install PHPUnit CodeCoverage
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy project files
+# Copy files
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --no-progress --no-autoloader
+
+# Copy package.json and install Node dependencies
+COPY package.json package-lock.json ./
+RUN npm ci || npm install --no-audit --legacy-peer-deps
+
+# Copy the rest of the application
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-interaction --no-progress
+# Generate autoloader with the complete codebase
+RUN composer dump-autoload --optimize
 
-# Install Node.js dependencies
-RUN npm install --legacy-peer-deps || npm install --force
-
-# Set up WordPress test environment
+# Make entrypoint script executable
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Create logs and test-results directories
+RUN mkdir -p logs test-results && chmod 777 logs test-results
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php", "-a"]

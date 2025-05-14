@@ -10,20 +10,48 @@ services:
       - ./logs:/var/www/html/logs
       - ./test-results:/var/www/html/test-results
     environment:
-      - WP_VERSION=latest
+      - WP_VERSION=${WP_VERSION:-latest}
+      - PHP_IDE_CONFIG=serverName=docker
+      - XDEBUG_MODE=coverage
     depends_on:
-      - mysql
-    command: bash -c "mkdir -p logs test-results && composer test > logs/composer-test.log 2>&1 && npm test > logs/npm-test.log 2>&1"
+      mysql:
+        condition: service_healthy
+    command: >
+      bash -c '
+        echo "Running PHP tests..." &&
+        mkdir -p logs test-results &&
+        composer test > logs/composer-test.log 2>&1 || touch logs/composer-test-failed.log &&
+        echo "Running JavaScript tests..." &&
+        npm test > logs/npm-test.log 2>&1 || touch logs/npm-test-failed.log &&
+        echo "Tests completed. Check logs for results." &&
+        if [ -f logs/composer-test-failed.log ] || [ -f logs/npm-test-failed.log ]; then
+          echo "Some tests failed. See logs for details." &&
+          cat logs/composer-test.log &&
+          cat logs/npm-test.log &&
+          exit 1;
+        else
+          echo "All tests passed successfully!";
+        fi
+      '
 
   mysql:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: wordpress_test
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
     ports:
       - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  mysql_data:

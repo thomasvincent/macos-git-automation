@@ -10,13 +10,97 @@ permissions:
   contents: read
 
 jobs:
-  php-tests:
+  # Use containerized tests for comprehensive testing across WordPress versions
+  containerized-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        wp-version: [latest, '6.4', '6.3', '6.2']
+      fail-fast: false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Setup dependency caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.composer/cache
+          node_modules
+          vendor
+        key: ${{ runner.os }}-deps-${{ hashFiles('**/composer.lock', '**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-deps-
+
+    - name: Make entrypoint script executable
+      run: chmod +x docker-entrypoint.sh
+
+    - name: Create logs and test-results directories
+      run: mkdir -p logs test-results && chmod -R 777 logs test-results
+
+    - name: Build and run tests
+      run: |
+        # Build the Docker image
+        docker compose build
+
+        # Run the tests with Docker Compose
+        WP_VERSION=${{ matrix.wp-version }} docker compose up --abort-on-container-exit
+      env:
+        WP_VERSION: ${{ matrix.wp-version }}
+
+    - name: Check test results
+      id: check-results
+      run: |
+        if [ -f logs/composer-test-failed.log ] || [ -f logs/npm-test-failed.log ]; then
+          echo "Tests failed. Check logs for details."
+          echo "tests_failed=true" >> $GITHUB_OUTPUT
+        else
+          echo "All tests passed successfully!"
+          echo "tests_failed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Upload test logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-logs-wp-${{ matrix.wp-version }}
+        path: |
+          ./logs
+          ./test-results
+        retention-days: 14
+
+    - name: Display test result summary
+      if: always()
+      run: |
+        echo "=== PHP Test Results ==="
+        if [ -f logs/composer-test.log ]; then
+          cat logs/composer-test.log
+        else
+          echo "No PHP test logs found"
+        fi
+        
+        echo "=== JavaScript Test Results ==="
+        if [ -f logs/npm-test.log ]; then
+          cat logs/npm-test.log
+        else
+          echo "No JavaScript test logs found"
+        fi
+
+    - name: Fail the workflow if tests failed
+      if: steps.check-results.outputs.tests_failed == 'true'
+      run: exit 1
+
+  # Keep a matrix version for testing on specific PHP versions
+  php-matrix-tests:
     runs-on: ubuntu-latest
     
     strategy:
       matrix:
         php-version: [7.4, 8.0, 8.1, 8.2]
-        wordpress-version: [latest, '6.4', '6.3', '6.2']
       fail-fast: false
         
     services:
@@ -36,9 +120,19 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-version }}
-        extensions: mbstring, intl, pdo_mysql
+        extensions: mbstring, intl, pdo_mysql, gd, zip, exif
         coverage: xdebug
         
+    - name: Setup dependency caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.composer/cache
+          vendor
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-version }}-
+          
     - name: Install Composer dependencies
       run: composer install --prefer-dist --no-progress --no-interaction
       
@@ -56,23 +150,19 @@ jobs:
         mysql -h 127.0.0.1 -u root -proot -e "SHOW DATABASES;"
 
         # Install WordPress test environment
-        bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 ${{ matrix.wordpress-version }}
+        bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 latest
         
     - name: Run PHP tests
       run: composer test
       
-    # Temporarily disable PHPCS checks until we can fix the coding standards issues
-    # - name: Configure PHPCS
-    #   run: composer config-phpcs
-    # - name: Run PHP CodeSniffer
-    #   run: composer phpcs
+    # PHP CodeSniffer check is now handled separately in the lint job
   
   js-tests:
     runs-on: ubuntu-latest
     
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x]
       fail-fast: false
         
     steps:
@@ -85,17 +175,14 @@ jobs:
         cache: npm
         
     - name: Install dependencies
-      run: npm install --legacy-peer-deps || npm install --force
+      run: npm ci || npm install --legacy-peer-deps
       
     - name: Run JavaScript tests
       run: npm test
       
-    # Temporarily disable JavaScript linting until we can fix the linting issues
-    # - name: Run JavaScript linting
-    #   run: npm run lint
-      
-  wordpress-coding-standards:
+  lint:
     runs-on: ubuntu-latest
+    needs: [containerized-tests]
     
     steps:
     - uses: actions/checkout@v4
@@ -110,15 +197,25 @@ jobs:
     - name: Configure Composer for PHPCS
       run: composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
       
-    - name: Install WordPress Coding Standards
-      run: |
-        composer global require wp-coding-standards/wpcs
-        composer global require phpcompatibility/phpcompatibility-wp
-        composer global require phpcsstandards/phpcsutils
-        composer global require phpcsstandards/phpcsextra
-        phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs,$HOME/.composer/vendor/phpcompatibility/php-compatibility,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-paragonie,$HOME/.composer/vendor/phpcompatibility/phpcompatibility-wp,$HOME/.composer/vendor/phpcsstandards/phpcsutils,$HOME/.composer/vendor/phpcsstandards/phpcsextra
+    - name: Install Composer dependencies
+      run: composer install --prefer-dist --no-progress --no-interaction
+      
+    - name: Set up WordPress Coding Standards
+      run: composer config-phpcs
+      
+    - name: Run PHPCS
+      continue-on-error: true
+      run: composer phpcs
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: npm
         
-    # Temporarily disable PHPCS WordPress Coding Standards check until we can fix the coding standards issues
-    # - name: Run PHPCS WordPress Coding Standards
-    #   run: |
-    #     phpcs --standard=WordPress --extensions=php --report=summary .
+    - name: Install Node.js dependencies
+      run: npm ci || npm install --legacy-peer-deps
+      
+    - name: Run ESLint
+      continue-on-error: true
+      run: npm run lint
