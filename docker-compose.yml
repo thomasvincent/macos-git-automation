@@ -18,19 +18,26 @@ services:
         condition: service_healthy
     command: >
       bash -c '
-        echo "Running PHP tests..." &&
+        # Run the bin/run-tests.sh script if it exists, otherwise fall back to manual testing
+        echo "Running tests..." &&
         mkdir -p logs test-results &&
-        composer test > logs/composer-test.log 2>&1 || touch logs/composer-test-failed.log &&
-        echo "Running JavaScript tests..." &&
-        npm test > logs/npm-test.log 2>&1 || touch logs/npm-test-failed.log &&
-        echo "Tests completed. Check logs for results." &&
-        if [ -f logs/composer-test-failed.log ] || [ -f logs/npm-test-failed.log ]; then
-          echo "Some tests failed. See logs for details." &&
-          cat logs/composer-test.log &&
-          cat logs/npm-test.log &&
-          exit 1;
+        chmod +x bin/run-tests.sh &&
+        if [ -f bin/run-tests.sh ]; then
+          bin/run-tests.sh --docker --wp-version=${WP_VERSION:-latest}
         else
-          echo "All tests passed successfully!";
+          echo "Running PHP tests..." &&
+          composer test > logs/composer-test.log 2>&1 || touch logs/composer-test-failed.log &&
+          echo "Running JavaScript tests..." &&
+          npm test > logs/npm-test.log 2>&1 || touch logs/npm-test-failed.log &&
+          echo "Tests completed. Check logs for results." &&
+          if [ -f logs/composer-test-failed.log ] || [ -f logs/npm-test-failed.log ]; then
+            echo "Some tests failed. See logs for details." &&
+            cat logs/composer-test.log &&
+            cat logs/npm-test.log &&
+            exit 1;
+          else
+            echo "All tests passed successfully!";
+          fi
         fi
       '
 

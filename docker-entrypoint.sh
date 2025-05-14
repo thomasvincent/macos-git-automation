@@ -18,6 +18,15 @@ fi
 
 echo "MySQL is ready"
 
+# Make sure install-wp-tests.sh exists and is executable
+if [ ! -f "bin/install-wp-tests.sh" ]; then
+  echo "Error: bin/install-wp-tests.sh is missing"
+  ls -la bin/
+  exit 1
+fi
+
+chmod +x bin/install-wp-tests.sh
+
 # Set up WordPress test environment
 if [ ! -d "/tmp/wordpress-tests-lib" ]; then
   echo "Setting up WordPress test environment..."

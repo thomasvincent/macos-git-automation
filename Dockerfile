@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     default-mysql-client \
+    subversion \
     curl \
     gnupg \
     && docker-php-ext-install \
@@ -42,6 +43,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
+
+# Copy bin directory first to ensure scripts are available
+COPY bin/ bin/
+RUN chmod +x bin/*.sh
 
 # Copy files
 COPY composer.json composer.lock ./
