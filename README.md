@@ -134,6 +134,12 @@ This plugin follows WordPress security best practices:
 
 ## API
 
+## System Requirements
+
+- PHP 7.4 or higher (tested with 7.4, 8.0, 8.1, 8.2, 8.3)
+- WordPress 6.3 or higher (tested with 6.3, 6.4, 6.5, and latest)
+- Node.js 20.x (for development only)
+
 The plugin provides the following JavaScript API for developers:
 
 ```javascript
