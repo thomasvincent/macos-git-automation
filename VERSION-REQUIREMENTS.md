@@ -4,9 +4,9 @@
 We should ensure compatibility with the following versions:
 
 ### PHP
-- Minimum: 7.4 (will reach EOL in November 2025)
-- Recommended: 8.0 and above
-- Tested with: 7.4, 8.0, 8.1, 8.2, 8.3
+- Minimum: 8.1 (supported until December 31, 2025)
+- Recommended: 8.2 or 8.3
+- Tested with: 8.1, 8.2, 8.3
 
 ### WordPress
 - Minimum: 6.3
@@ -31,13 +31,13 @@ We should ensure compatibility with the following versions:
 - Run with specific WordPress version: `WP_VERSION=6.4 docker compose up`
 
 ## GitHub Actions
-- Matrix tests for PHP 7.4, 8.0, 8.1, 8.2, 8.3
+- Matrix tests for PHP 8.1, 8.2, 8.3
 - WordPress tests for latest, 6.5, 6.4, 6.3
 - Node.js 20.x for JavaScript tests
 
 ## Dependencies
 Current PHP dependencies in composer.json should use:
-- PHP: >=7.4
+- PHP: >=8.1
 - composer/installers: ^2.3.0
 - Plus appropriate development dependencies
 
