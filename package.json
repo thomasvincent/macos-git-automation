@@ -7,8 +7,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint assets/js/*.js",
-    "lint:fix": "eslint --fix assets/js/*.js",
+    "lint": "eslint --no-warn-ignored assets/js/*.js",
+    "lint:fix": "eslint --fix --no-warn-ignored assets/js/*.js",
     "build": "npm run lint && npm run test",
     "zip": "mkdir -p dist && zip -r dist/google-calendar-widget.zip . -x '*.git*' 'node_modules/*' 'dist/*' '.vscode/*' '.DS_Store'"
   },
@@ -30,12 +30,8 @@
   },
   "homepage": "https://github.com/kazokuda/google-calendar-widget#readme",
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
+    "eslint": "^9.27.0",
     "eslint-plugin-jest": "^28.11.0",
-    "eslint-plugin-n": "^17.18.0",
-    "eslint-plugin-promise": "^7.2.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jquery": "^3.7.1"
