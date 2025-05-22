@@ -51,6 +51,7 @@ Thumbs.db
 .vscode/
 .idea/
 .trunk/
+.claude/
 
 # IDE files
 .idea/
